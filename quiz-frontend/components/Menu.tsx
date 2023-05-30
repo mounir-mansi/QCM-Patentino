@@ -9,7 +9,7 @@ return (
 <Navbar
     fluid={true}
     rounded={true}
-    className="bg-dark dark"
+    className="bg-black dark"
   >
     <Navbar.Brand >
       <Image
