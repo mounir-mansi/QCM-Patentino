@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import Menu from "../components/Menu";
 import ModuleCard from '@/components/Card';
+import PiedDePage from '@/components/Footer';
 
 export default function Home() {
   return (
@@ -9,6 +10,8 @@ export default function Home() {
           <Menu />
 
           <ModuleCard/>
+
+          <PiedDePage/>
     </>
   );
 }
