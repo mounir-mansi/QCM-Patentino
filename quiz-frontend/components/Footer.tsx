@@ -1,7 +1,6 @@
-'use client';
+
 
 import {Footer} from "flowbite-react";
-import Logo from "../public/assets/logo_Quizine.png"
 
 
 
@@ -14,11 +13,11 @@ return (
   <Footer.Copyright
     by="Quizine™"
     href="#"
-    year={2022}
+    year={2023}
   />
   <Footer.LinkGroup>
     <Footer.Link href="https://www.linkedin.com/in/emilie-di-palma-b8b63a264/">
-      Emily
+      Emilie
     </Footer.Link>
     <Footer.Link href="https://www.linkedin.com/in/briac-gauthier-lefeuvre-460004263/">
       Briac

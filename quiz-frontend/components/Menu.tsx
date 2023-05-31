@@ -1,4 +1,4 @@
-'use client';
+
 
 import { Navbar, Dropdown, Avatar } from "flowbite-react";
 import Logo from "../public/assets/logo_Quizine.png"
