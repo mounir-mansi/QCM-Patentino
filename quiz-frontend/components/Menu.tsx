@@ -13,7 +13,7 @@ export default function Menu() {
 
 return (
 <Navbar
-  className="dark bg-black"
+  className="dark bg-dark"
     fluid={true}
     rounded={true}
   >

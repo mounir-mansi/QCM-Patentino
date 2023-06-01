@@ -10,7 +10,7 @@ return (
 
 
 <Footer container
-    className="dark bg-black"
+    className="dark bg-dark"
  
     >
   <Footer.Copyright
