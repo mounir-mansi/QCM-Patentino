@@ -9,7 +9,10 @@ return (
 
 
 
-<Footer container>
+<Footer container
+    className="dark bg-black"
+ 
+    >
   <Footer.Copyright
     by="Quizine™"
     href="#"

@@ -8,7 +8,7 @@ import LogIn from '@/components/LogInForm';
 
 export default function Home() {
   return (
-    <div >
+    <div className="bg-beige">
           <Menu/>
 
           <ModuleCard/>

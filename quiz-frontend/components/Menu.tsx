@@ -1,17 +1,23 @@
-
-
-import { Navbar, Dropdown, Avatar } from "flowbite-react";
+import { Navbar, Dropdown, Avatar, Button } from "flowbite-react";
 import Logo from "../public/assets/logo_Quizine.png"
 import Image from 'next/image'
+// import { useRouter } from "next/router";
 
 export default function Menu() {
+
+  // const router = useRouter()
+
+  // const goToLogIn = () => {
+  //   router.push('/pages/logIn')
+  // }
+
 return (
 <Navbar
+  className="dark bg-black"
     fluid={true}
     rounded={true}
-    className="bg-black dark"
   >
-    <Navbar.Brand >
+    <Navbar.Brand>
       <Image
         src={Logo}
         className="mr-3 h-16 w-40 sm:h-9"
@@ -22,26 +28,21 @@ return (
     </Navbar.Brand>
     <div className="flex md:order-2">
       <Dropdown
+        disabled={false}
         arrowIcon={false}
         inline={true}
         label={<Avatar alt="User settings" img="https://flowbite.com/docs/images/people/profile-picture-5.jpg" rounded={true}/>}
       >
         <Dropdown.Header>
           <span className="block text-sm">
-            Bonnie Green
+            Joe LaMouk
           </span>
           <span className="block truncate text-sm font-medium">
-            name@flowbite.com
+            name@joelamouk.com
           </span>
         </Dropdown.Header>
         <Dropdown.Item>
-          Dashboard
-        </Dropdown.Item>
-        <Dropdown.Item>
-          Settings
-        </Dropdown.Item>
-        <Dropdown.Item>
-          Earnings
+          Mon Profil
         </Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item>
@@ -67,5 +68,26 @@ return (
         Ajouter un Quiz
       </Navbar.Link>
     </Navbar.Collapse>
+    <div className="flex flex-row gap-4">
+    <Button
+      color="failure"
+      size="sm"
+      pill
+      href="/logIn">
+      <p>
+        Log In 
+      </p>
+    </Button>
+    <Button
+      color="failure"
+      size="sm"
+      pill
+      outline
+      href="/signUp">
+      <p>
+        Sign Up 
+      </p>
+    </Button>
+    </div>
   </Navbar>)
 }

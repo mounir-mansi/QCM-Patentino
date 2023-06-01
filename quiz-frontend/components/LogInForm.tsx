@@ -5,7 +5,7 @@ import { Label, TextInput, Button, Checkbox } from "flowbite-react";
 export default function LogIn() {
 
 return(
-<form className="flex max-w-md flex-col gap-4 border-2 rounded-lg p-4">
+<form className="flex max-w-md flex-col gap-4 border-2 rounded-lg p-4 m-12 w-full bg-gray-light">
   <div>
     <div className="mb-2 block">
       <Label
