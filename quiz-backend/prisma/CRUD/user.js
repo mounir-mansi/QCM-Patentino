@@ -14,6 +14,43 @@ async function createUser(data) {
   }
 }
 
+// Créer un nouvel utilisateur
+async function findUserByEmail(data) {
+  try {
+    return await prisma.user.findUnique({ where: { email }, data });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+// Fonction pour comparer les mots de passe
+async function comparePasswords(email, password) {
+  try {
+    // Recherchez l'utilisateur par ID
+    const user = await findUserByEmail({ email });
+
+    if (!user) {
+      throw new Error("Utilisateur introuvable");
+    }
+
+    // Comparez les mots de passe
+    if (user.password === password) {
+      return true; // Le mot de passe correspond
+    } else {
+      return false; // Le mot de passe ne correspond pas
+    }
+  } catch (error) {
+    console.error(
+      "Une erreur s'est produite lors de la comparaison des mots de passe :",
+      error
+    );
+    throw error;
+  }
+}
+
 // Obtenir un utilisateur par ID
 async function getUserById(userId) {
   try {
@@ -52,6 +89,8 @@ async function deleteUser(userId) {
 
 module.exports = {
   createUser,
+  findUserByEmail,
+  comparePasswords,
   getUserById,
   updateUser,
   deleteUser,
