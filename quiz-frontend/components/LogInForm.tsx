@@ -1,8 +1,9 @@
 'use client';
 
-import { Label, TextInput, Button, Checkbox } from "flowbite-react";
+import { Label, TextInput, Button, Checkbox, Alert } from "flowbite-react";
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { HiInformationCircle } from 'react-icons/hi';
 
 
 export default function LogIn() {
@@ -10,13 +11,14 @@ export default function LogIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState("")
 
   const handleLogin = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
 
     try {
       // Rechercher l'utilisateur par e-mail
-      const user = await fetch("http://localhost:5500/users/", {
+      const res = await fetch("/api/users/login", {
         method:"post", 
         headers:{
           "content-type": "application/json"
@@ -26,21 +28,17 @@ export default function LogIn() {
           password,
         })
       });
-      console.log(user)
+      
+      const {token, message} = await res.json()
+      if (token) {
+        localStorage.setItem("token", token);
+        router.push('/')
 
-      if (!user) {
-        throw new Error('Utilisateur introuvable');
-      }
-
-      // Comparer les mots de passe
-      const isPasswordCorrect = await comparePasswords(user.id, password);
-
-      if (isPasswordCorrect) {
-        // Connexion réussie, rediriger l'utilisateur vers une autre page
-        router.push('/dashboard');
-      } else {
-        console.log('Mot de passe incorrect');
-      }
+    } else if(message){
+      setErrorMessage(message)
+    } else {
+      setErrorMessage("Erreur")
+    }
     } catch (error) {
       console.error(error);
     }
@@ -81,6 +79,17 @@ return(
       Remember me
     </Label>
   </div>
+    {errorMessage && (<Alert
+    color="failure"
+    icon={HiInformationCircle}>
+    <span>
+      <p>
+        {errorMessage}
+      </p>
+    </span>
+    </Alert>)}
+
+
   <Button type="submit">
     Submit
   </Button>

@@ -15,9 +15,9 @@ async function createUser(data) {
 }
 
 // Créer un nouvel utilisateur
-async function findUserByEmail(data) {
+async function findUserByEmail(email) {
   try {
-    return await prisma.user.findUnique({ where: { email }, data });
+    return await prisma.user.findUnique({ where: { email } });
   } catch (error) {
     console.error(error);
     throw error;
@@ -30,7 +30,7 @@ async function findUserByEmail(data) {
 async function comparePasswords(email, password) {
   try {
     // Recherchez l'utilisateur par ID
-    const user = await findUserByEmail({ email });
+    const user = await findUserByEmail(email);
 
     if (!user) {
       throw new Error("Utilisateur introuvable");

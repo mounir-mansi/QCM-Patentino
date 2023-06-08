@@ -46,12 +46,12 @@ userRouter.post("/login", async (req, res) => {
     //comparer email et password si c'est bon et renvoyer un token
     const compare = await modelUser.comparePasswords(email, password);
     if (compare === true) {
-      //envoyer un token
+      res.json({ token: email });
     } else {
-      //envoyer une erreur
+      res.status(500).json({ message: "Email ou mot de passe incorrect" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de login." });
+    res.status(500).json({ message: "Erreur de login.", error });
   }
 });
 
