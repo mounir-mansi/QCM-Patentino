@@ -10,7 +10,7 @@ export default function ModuleCard(props: any) {
       Quiz {props.module}  Niveau {props.level}
     </h5>
     <p className="font-normal text-gray-700 dark:text-gray-400">
-      Testez vos connaissances de base en {props.level} avec ce quiz niveau {props.level}
+      Testez vos connaissances de base en {props.module} avec ce quiz niveau {props.level}
     </p>
   </Card>
 </div>

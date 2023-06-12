@@ -1,10 +1,7 @@
 'use client';
-import Image from 'next/image'
 import Menu from "../components/Menu";
 import ModuleCard from '@/components/Card';
 import PiedDePage from '@/components/Footer';
-import SignUp from '@/components/SignUpForm';
-import LogIn from '@/components/LogInForm';
 import Title from '@/components/Title';
 
 export default function Home() {
