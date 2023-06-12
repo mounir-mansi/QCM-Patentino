@@ -12,8 +12,9 @@ export default function Menu() {
   // }
 
 return (
+<div   className="dark bg-black">
 <Navbar
-  className="dark bg-black"
+
     fluid={true}
     rounded={true}
   >
@@ -53,18 +54,18 @@ return (
     </div>
     <Navbar.Collapse>
       <Navbar.Link
-        href="/navbars"
+        href="/"
         active={true}
       >
         Home
       </Navbar.Link>
-      <Navbar.Link href="/navbars">
+      <Navbar.Link href="/games">
         Quiz
       </Navbar.Link>
-      <Navbar.Link href="/navbars">
+      <Navbar.Link href="/">
         Mes scores
       </Navbar.Link>
-      <Navbar.Link href="/navbars">
+      <Navbar.Link href="/">
         Ajouter un Quiz
       </Navbar.Link>
     </Navbar.Collapse>
@@ -89,5 +90,6 @@ return (
       </p>
     </Button>
     </div>
-  </Navbar>)
+  </Navbar>
+  </div>)
 }
