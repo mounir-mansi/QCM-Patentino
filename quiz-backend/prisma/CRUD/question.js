@@ -55,11 +55,11 @@ async function deleteQuestion(questionId) {
   }
 }
 
-// Récupérer un ensemble de questions selon le niveau
-async function getQuestionsByLevel(questionLevel) {
+// Récupérer un ensemble de questions selon le module et le niveau
+async function getQuestionsByModuleAndLevel(questionLevel, moduleId) {
   try {
     return await prisma.question.findMany({
-      where: { question_level: questionLevel },
+      where: { question_level: questionLevel, module_id: moduleId },
     });
   } catch (error) {
     console.error(error);
@@ -74,5 +74,5 @@ module.exports = {
   getQuestionById,
   updateQuestion,
   deleteQuestion,
-  getQuestionsByLevel,
+  getQuestionsByModuleAndLevel,
 };

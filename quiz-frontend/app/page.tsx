@@ -15,9 +15,9 @@ export default function Home() {
       <div className="container w-[50%] my-10 ml-[25%]">
         <Title />
             <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-              <ModuleCard/>
-              <ModuleCard/>
-              <ModuleCard/>
+              <ModuleCard module="PHP" level="Facile"/>
+              <ModuleCard module="PHP" level="Intermédiaire"/>
+              <ModuleCard module="PHP" level="Difficile"/>
             </div>
       </div>
           <PiedDePage/>
