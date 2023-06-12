@@ -19,14 +19,15 @@ userRouter.get("/", async (req, res) => {
   //   }
 });
 
-userRouter.post("/", async (req, res) => {
+userRouter.post("/signup", async (req, res) => {
   try {
-    const { firstname, lastname, email } = req.body;
+    const { firstname, lastname, email, password } = req.body;
     // Récupérer tous les utilisateurs depuis la base de données avec Prisma
     const user = await modelUser.createUser({
       firstname: firstname,
       lastname: lastname,
       email: email,
+      password: password,
     });
     console.log(user);
 
