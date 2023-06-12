@@ -1,4 +1,7 @@
+'use client';
+
 import { Card } from "flowbite-react/lib/esm/components/Card/Card";
+import { Button } from 'flowbite-react';
 
 export default function ModuleCard(props: any) {
   {props.module} {props.level}
@@ -12,6 +15,9 @@ export default function ModuleCard(props: any) {
     <p className="font-normal text-gray-700 dark:text-gray-400">
       Testez vos connaissances de base en {props.module} avec ce quiz niveau {props.level}
     </p>
+    <a className="flex justify-around" href={`/start?module=${props.module}&level=${props.level}`}>
+    <Button  color="failure" pill>Lancer le quiz</Button>
+    </a>
   </Card>
 </div>
     )}

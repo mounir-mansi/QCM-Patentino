@@ -5,6 +5,8 @@ import PiedDePage from '@/components/Footer';
 import Title from '@/components/Title';
 
 export default function Home() {
+
+
   return (
     <div className="bg-beige">
           <Menu/>

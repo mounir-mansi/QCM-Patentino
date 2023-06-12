@@ -1,4 +1,5 @@
 import Timer from "./Timer";
+import { Button } from 'flowbite-react';
 
 const QuestionCard = () => {
     return (       
@@ -17,7 +18,7 @@ const QuestionCard = () => {
             <div className="container -mb-10 h-full p-3">
                 <div className="text-center">
                     <button className=" bg-gray-dark mx-3 my-3 rounded-3xl lg:w-[40%] cursor-default shadow sm:w-[50%] ">
-                        <div className="my-3 lg:text-2xl sm:text-xl">
+                        <div className="my-3 text-white lg:text-2xl sm:text-xl">
                             Question 1/30
                         </div>
                     </button>
@@ -35,12 +36,8 @@ const QuestionCard = () => {
             </div>
 
             <div className="container h-full p-3">
-                <div className="text-center">
-                    <button className=" bg-green-500 mx-3 mt-3 rounded-3xl w-[70%] shadow-md">
-                        <div className="my-3 text-2xl">
-                            Valider
-                        </div>
-                    </button>
+                <div className="flex flex-row items-center">
+                    <Button color="success" pill className="shadow-md my-3 text-2xl w-[70%] ">Valider</Button>
                 </div>
             </div>
             
