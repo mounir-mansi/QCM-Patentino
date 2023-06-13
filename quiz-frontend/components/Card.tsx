@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from "flowbite-react/lib/esm/components/Card/Card";
+import { Card } from "flowbite-react";
 import { Button } from 'flowbite-react';
 
 export default function ModuleCard(props: any) {

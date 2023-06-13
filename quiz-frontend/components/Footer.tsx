@@ -8,11 +8,8 @@ export default function PiedDePage() {
 return (
 
 
-
-<Footer container
-    className="dark bg-black"
- 
-    >
+<div     className="dark bg-black"> 
+<Footer container>
   <Footer.Copyright
     by="Quizine™"
     href="#"
@@ -32,5 +29,6 @@ return (
       Yann
     </Footer.Link>
   </Footer.LinkGroup>
-</Footer>)
+</Footer>
+</div> )
 }

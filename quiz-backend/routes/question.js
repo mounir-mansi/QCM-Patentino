@@ -28,15 +28,16 @@ questionRouter.post("/", async (req, res) => {
   }
 });
 
-questionRouter.get("/newquiz", async (req, res) => {
+questionRouter.get("/", async (req, res) => {
   try {
-    const { question_title, question_level, question_duration } = req.body;
-    const question = await modelQuestion.getQuestionsByModuleAndLevel({
-      question_title: question_title,
-      question_level: question_level,
-      question_duration: question_duration,
-    });
-    res.json(question);
+    const { module, level } = req.query;
+
+    const questions = await modelQuestion.getQuestionsByModuleAndLevel(
+      module,
+      level
+    );
+
+    res.json(questions);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur lors de la génération du quiz." });

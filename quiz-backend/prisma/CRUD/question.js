@@ -56,10 +56,18 @@ async function deleteQuestion(questionId) {
 }
 
 // Récupérer un ensemble de questions selon le module et le niveau
-async function getQuestionsByModuleAndLevel(questionLevel, moduleId) {
+async function getQuestionsByModuleAndLevel(moduleTitle, questionLevel) {
   try {
+    const module = await prisma.module.findUnique({
+      where: { module_title: moduleTitle },
+    });
+
+    if (!module) {
+      throw new Error("Module not found");
+    }
+
     return await prisma.question.findMany({
-      where: { question_level: questionLevel, module_id: moduleId },
+      where: { question_level: questionLevel, module_id: module.id },
     });
   } catch (error) {
     console.error(error);

@@ -4,19 +4,19 @@ const express = require("express");
 const userRouter = express.Router();
 
 userRouter.get("/", async (req, res) => {
-  res.status(200).json({ msg: "success" });
-  //   try {
-  //     // Récupérer tous les utilisateurs depuis la base de données avec Prisma
-  //     const users = await prisma.user.findMany();
+  // res.status(200).json({ msg: "success" });
+  try {
+    // Récupérer tous les utilisateurs depuis la base de données avec Prisma
+    const users = await prisma.user.findMany();
 
-  //     // Envoyer la liste des utilisateurs en tant que réponse JSON
-  //     res.json(users);
-  //   } catch (error) {
-  //     console.error(error);
-  //     res
-  //       .status(500)
-  //       .json({ message: "Erreur lors de la récupération des utilisateurs." });
-  //   }
+    // Envoyer la liste des utilisateurs en tant que réponse JSON
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la récupération des utilisateurs." });
+  }
 });
 
 userRouter.post("/signup", async (req, res) => {
