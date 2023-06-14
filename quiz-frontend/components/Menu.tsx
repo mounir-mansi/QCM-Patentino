@@ -59,7 +59,7 @@ return (
       >
         Home
       </Navbar.Link>
-      <Navbar.Link href="/games">
+      <Navbar.Link href="/quiz">
         Quiz
       </Navbar.Link>
       <Navbar.Link href="/">
