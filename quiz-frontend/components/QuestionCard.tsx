@@ -4,7 +4,7 @@ import { Button } from 'flowbite-react';
 
 type QuestionCardProps = {
   currentQuestionIndex: number;
-  questions: string[]; // Remplacez le type 'string[]' par le type approprié pour vos questions
+  questions: {question_title:string}[]; // Remplacez le type 'string[]' par le type approprié pour vos questions
 };
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, questions }) => {
@@ -32,7 +32,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
 
       <div className="container bg-white h-full p-3 rounded-md shadow-md">
         <ul className="text-center mb-14">
-          <li className="my-5 text-2xl text-black">{questions[currentQuestionIndex]}</li>
+          <li className="my-5 text-2xl text-black">{questions[currentQuestionIndex].question_title}</li>
           {/* Reste du code... */}
         </ul>
       </div>

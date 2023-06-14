@@ -3,10 +3,6 @@ const express = require("express");
 
 const questionRouter = express.Router();
 
-questionRouter.get("/", async (req, res) => {
-  res.status(200).json({ msg: "success" });
-});
-
 questionRouter.post("/", async (req, res) => {
   try {
     const { question_title, question_level, question_duration } = req.body;
