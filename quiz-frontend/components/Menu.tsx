@@ -1,6 +1,8 @@
 import { Navbar, Dropdown, Avatar, Button } from "flowbite-react";
 import Logo from "../public/assets/logo_Quizine.png"
 import Image from 'next/image'
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 // import { useRouter } from "next/router";
 
 export default function Menu() {
@@ -10,6 +12,8 @@ export default function Menu() {
   // const goToLogIn = () => {
   //   router.push('/pages/logIn')
   // }
+
+  const pathName =usePathname();
 
 return (
 <div   className="dark bg-black">
@@ -55,11 +59,11 @@ return (
     <Navbar.Collapse>
       <Navbar.Link
         href="/"
-        active={true}
+        active={pathName==="/"}
       >
         Home
       </Navbar.Link>
-      <Navbar.Link href="/quiz">
+      <Navbar.Link href="/quiz" active={pathName==="/quiz"}>
         Quiz
       </Navbar.Link>
       <Navbar.Link href="/">

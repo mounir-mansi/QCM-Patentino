@@ -33,6 +33,7 @@ export default function Timer(props: any) {
   return (
     <div>
       <p>
+      Temps restant :
         {" "}
         {mins < 10 ? `0${mins}` : mins}:{secs < 10 ? `0${secs}` : secs}
       </p>
