@@ -4,6 +4,8 @@ import { Button, Card } from "flowbite-react";
 import "../app/globals.css";
 import PiedDePage from "@/components/Footer";
 import Menu from "@/components/Menu";
+import AnimatedBackground from "@/components/Background";
+
 
 
 
@@ -41,26 +43,26 @@ const StartQuiz = () => {
   }, [query.module, query.level, push]);
 
   return (
-    <div className="bg-beige">
-<Menu />
+    <div>
+      <Menu />
+      <AnimatedBackground/>
 
-      <div className="container w-[50%] my-10 ml-[25%] rounded-lg">
-        <div className='container bg-white rounded-lg text-center p-5'>
-          <div className='flex-col gap-x-3 p-3'>
-            <p>
+      <div className="grid place-items-center my-6">
+          <Card>
+            <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Vous allez démarrer le quiz {query.module} niveau {query.level}.
+            </h5>
+            <p className="font-normal text-gray-700 dark:text-gray-400 text-center">
+              Ce quiz comporte 20 questions.<br/>
+              Vous disposez de 30 secondes par question.<br/>
+              Etes-vous prêt ?
             </p>
-            <p>Ce quiz comporte 20 questions.</p>
-            <p>Vous disposez de 30 secondes par question.</p>
-            <p>Etes-vous prêt ?</p>
-      <div className="flex justify-around mt-5">
-        <Button onClick={startQuiz} color="failure" pill>
-          Démarrer le quiz
-        </Button>
-        </div>
-          </div>
-        </div>
+
+            <Button onClick={startQuiz} color="failure" pill>Démarrer le quiz</Button>
+
+          </Card>
       </div>
+
       <PiedDePage />
     </div>
   );

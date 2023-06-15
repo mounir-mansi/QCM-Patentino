@@ -4,26 +4,27 @@ import Menu from "../components/Menu";
 import ModuleCard from '@/components/Card';
 import PiedDePage from '@/components/Footer';
 import Title from '@/components/Title';
+import { Card } from "flowbite-react";
 
 export default function Home() {
 
 
   return (
-
     <div>
-          <Menu/>
-            
-      <div className="container w-[50%] my-10 ml-[25%]">
-        <Title />
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-5'>
-              <ModuleCard module="PHP" level="Facile"/>
-              <ModuleCard module="PHP" level="Intermédiaire"/>
-              <ModuleCard module="PHP" level="Difficile"/>
-            </div>
+      
+      <Menu/>
+
+
+            <div className="grid place-items-center"><Title title='hello' /></div>
+            <AnimatedBackground/>
+
+
+      <div>
+        <Card className="h-128 mb-6 mx-6" />
       </div>
-      <AnimatedBackground/>
-          <PiedDePage/>
+
+      <PiedDePage/>
+
     </div>
-    
   )
 }
