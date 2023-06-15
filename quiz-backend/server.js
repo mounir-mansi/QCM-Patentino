@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const userRouter = require("./routes/user");
 const questionRouter = require("./routes/question");
+const answerRouter = require("./routes/answer");
 
 // Créer une instance du routeur Express
 const app = express();
@@ -9,6 +10,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use("/users", userRouter);
 app.use("/question", questionRouter);
+app.use("/answer", answerRouter);
 
 // Configuration de l'application Express
 app.use((req, res, next) => {

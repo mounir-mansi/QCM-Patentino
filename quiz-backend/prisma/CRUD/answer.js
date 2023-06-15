@@ -19,18 +19,6 @@ async function createAnswer(questionId, data) {
   }
 }
 
-// Obtenir une réponse par ID
-async function getAnswerById(answerId) {
-  try {
-    return await prisma.answer.findUnique({ where: { id: answerId } });
-  } catch (error) {
-    console.error(error);
-    throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
-}
-
 // Mettre à jour une réponse
 async function updateAnswer(answerId, data) {
   try {
@@ -58,7 +46,9 @@ async function deleteAnswer(answerId) {
 // Récupérer toutes les réponses d'une question
 async function getAnswersByQuestionId(questionId) {
   try {
-    return await prisma.answer.findMany({ where: { question_id: questionId } });
+    return await prisma.answer.findMany({
+      where: { question_id: parseInt(questionId) },
+    });
   } catch (error) {
     console.error(error);
     throw error;
@@ -69,7 +59,6 @@ async function getAnswersByQuestionId(questionId) {
 
 module.exports = {
   createAnswer,
-  getAnswerById,
   updateAnswer,
   deleteAnswer,
   getAnswersByQuestionId,

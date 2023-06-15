@@ -20,4 +20,18 @@ answerRouter.post("/", async (req, res) => {
   }
 });
 
+answerRouter.get("/question/:id", async (req, res) => {
+  try {
+    const questionId = req.params.id;
+    console.log(questionId);
+    const answers = await modelAnswer.getAnswersByQuestionId(questionId);
+    res.json(answers);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la récupération des réponses." });
+  }
+});
+
 module.exports = answerRouter;
