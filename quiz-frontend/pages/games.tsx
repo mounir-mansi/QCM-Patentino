@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
 import "../app/globals.css";
 import PiedDePage from "@/components/Footer";
 import Menu from "@/components/Menu";
@@ -8,7 +7,8 @@ import AnimatedBackground from "@/components/Background";
 
 const Game = () => {
   const [questions, setQuestions] = useState<any[]>([]); // État pour stocker les questions
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentScoreData, setCurrentScoreData] = useState(0);
 
 
   useEffect(() => {
@@ -18,17 +18,32 @@ const Game = () => {
     if (questionsData) {
       setQuestions(JSON.parse(questionsData)); // Met à jour l'état des questions avec les données récupérées
     }
+    localStorage.setItem("currentScore",`${currentScoreData}`);
 
-    const currentScoreData = localStorage.setItem("currentScore","0")
 
     
-  }, []);
+  }, [currentScoreData]);
 
 
-  const handleSubmit = () => {
-    setCurrentQuestionIndex(currentQuestionIndex+1)
+  const handleSubmit = async (selectedAnswerId: number) => {
+    
     //Mettre en parametre selectedAnswerId (number) et le comparer avec la bonne valeur pour vérifier si la réponse est bonne ou pas (faire une requete API).
-  }
+    try {
+      const url = `/api/answer/${selectedAnswerId}`;
+      const response = await fetch(url);
+      const answer = await response.json();
+      console.log(answer.result_answer);
+      if (answer.result_answer==true) {
+        setCurrentScoreData(currentScoreData+1) ;
+      };
+      console.log(currentScoreData);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCurrentQuestionIndex(currentQuestionIndex+1)
+    }
+  };
+  
 
 if (questions.length > 0) {
   return (

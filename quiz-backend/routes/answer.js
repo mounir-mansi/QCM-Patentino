@@ -34,4 +34,18 @@ answerRouter.get("/question/:id", async (req, res) => {
   }
 });
 
+answerRouter.get("/:id", async (req, res) => {
+  try {
+    const answerId = req.params.id;
+    console.log(answerId);
+    const answer = await modelAnswer.getSelectedAnswer(answerId);
+    res.json(answer);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la récupération de la réponse." });
+  }
+});
+
 module.exports = answerRouter;

@@ -57,9 +57,24 @@ async function getAnswersByQuestionId(questionId) {
   }
 }
 
+//Voir si la réponse envoyée est la bonne
+async function getSelectedAnswer(selectedAnswerId) {
+  try {
+    return await prisma.answer.findFirst({
+      where: { id: parseInt(selectedAnswerId) },
+    });
+  } catch (error) {
+    console.error(error);
+    throw error;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 module.exports = {
   createAnswer,
   updateAnswer,
   deleteAnswer,
   getAnswersByQuestionId,
+  getSelectedAnswer,
 };
