@@ -12,22 +12,30 @@ type QuestionCardProps = {
 const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, questions, onSubmit }) => {
   const [answers, setAnswers]= useState([])
   const [selectedAnswer, setSelectedAnswer] = useState(0)
+  const [timerReset, setTimerReset] = useState(false)
   
   useEffect (() => {
     getAnswers(questions[currentQuestionIndex].id)
     .then((values)=>setAnswers(values))
+    setTimerReset(false); // Réinitialiser l'état du timerReset lorsque la question change
   },[questions, currentQuestionIndex])
 
   const handleAnswerClick = ((answerId: number) => {
     setSelectedAnswer(answerId)
   })
+
+  const handleTerminated = () => {
+    onSubmit(selectedAnswer)
+    setTimerReset(true); // Définir l'état du timerReset à true lorsque le timer atteint zéro
+
+  }
   return (
     <div className="container w-[50%] my-10 ml-[25%]">
       <div className="container bg-white h-full px-3 py-1 rounded-md shadow-md">
         <div className="text-center">
           <div className="mx-3 my-3 rounded-3xl w-full">
             <div className="text-black text-2xl">
-              <Timer />
+              <Timer onTerminated={handleTerminated} timerReset={timerReset}/>
             </div>
           </div>
         </div>

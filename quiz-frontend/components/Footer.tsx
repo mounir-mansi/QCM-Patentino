@@ -28,6 +28,9 @@ return (
     <Footer.Link href="https://www.linkedin.com/in/yannchavret/">
       Yann
     </Footer.Link>
+    <Footer.Link href="https://chat.openai.com/">
+      Chat GPT
+    </Footer.Link>
   </Footer.LinkGroup>
 </Footer>
 </div> )

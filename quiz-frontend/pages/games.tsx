@@ -24,6 +24,7 @@ const Game = () => {
     
   }, []);
 
+
   const handleSubmit = () => {
     setCurrentQuestionIndex(currentQuestionIndex+1)
     //Mettre en parametre selectedAnswerId (number) et le comparer avec la bonne valeur pour vérifier si la réponse est bonne ou pas (faire une requete API).
