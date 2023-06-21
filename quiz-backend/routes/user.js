@@ -44,10 +44,19 @@ userRouter.post("/signup", async (req, res) => {
 userRouter.post("/login", async (req, res) => {
   try {
     const { password, email } = req.body;
-    //comparer email et password si c'est bon et renvoyer un token
+    // Comparer email et password et renvoyer un token
     const compare = await modelUser.comparePasswords(email, password);
+
     if (compare === true) {
-      res.json({ token: email });
+      const user = await modelUser.findUserByEmail(email);
+      if (user) {
+        const { id, email } = user;
+
+        // Renvoyer les données de l'utilisateur (sans le mot de passe)
+        res.json({ token: email, user: id });
+      } else {
+        res.status(404).json({ message: "Utilisateur introuvable" });
+      }
     } else {
       res.status(500).json({ message: "Email ou mot de passe incorrect" });
     }
@@ -55,6 +64,23 @@ userRouter.post("/login", async (req, res) => {
     res.status(500).json({ message: "Erreur de login.", error });
   }
 });
+
+// userRouter.post("/login", async (req, res) => {
+//   try {
+//     const { password, email } = req.body;
+//     //comparer email et password si c'est bon et renvoyer un token
+//     const compare = await modelUser.comparePasswords(email, password);
+//     const userID = await modelUser.findUserByEmail(email);
+//     console.log(userID);
+//     if (compare === true) {
+//       res.json({ token: email, userID: userID });
+//     } else {
+//       res.status(500).json({ message: "Email ou mot de passe incorrect" });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ message: "Erreur de login.", error });
+//   }
+// });
 
 userRouter.get("/:id", async (req, res) => {
   try {

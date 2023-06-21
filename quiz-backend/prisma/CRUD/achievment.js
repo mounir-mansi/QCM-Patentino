@@ -3,27 +3,33 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // Créer une nouvelle réalisation (achievement)
-async function createAchievement(moduleId, userId, data) {
+async function createAchievement(moduleId, userId, score, level, success) {
   try {
-    return await prisma.achievement.create({
+    return await prisma.achievment.create({
       data: {
-        ...data,
-        module: { connect: { id: moduleId } },
-        user: { connect: { id: userId } },
+        module: {
+          connect: { id: moduleId },
+        },
+        user: {
+          connect: { id: userId },
+        },
+        score: parseInt(score),
+        level: level,
+        success: success,
+        date: new Date(), // Utilisez la date actuelle ou la valeur souhaitée
+        total_duration: 0, // Utilisez la valeur souhaitée
       },
     });
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 // Obtenir une réalisation (achievement) par ID
 async function getAchievementById(achievementId) {
   try {
-    return await prisma.achievement.findUnique({
+    return await prisma.achievment.findUnique({
       where: { id: achievementId },
     });
   } catch (error) {
@@ -37,7 +43,7 @@ async function getAchievementById(achievementId) {
 // Mettre à jour une réalisation (achievement)
 async function updateAchievement(achievementId, data) {
   try {
-    return await prisma.achievement.update({
+    return await prisma.achievment.update({
       where: { id: achievementId },
       data,
     });
@@ -52,7 +58,7 @@ async function updateAchievement(achievementId, data) {
 // Supprimer une réalisation (achievement)
 async function deleteAchievement(achievementId) {
   try {
-    return await prisma.achievement.delete({ where: { id: achievementId } });
+    return await prisma.achievment.delete({ where: { id: achievementId } });
   } catch (error) {
     console.error(error);
     throw error;
@@ -64,7 +70,7 @@ async function deleteAchievement(achievementId) {
 // Récupérer toutes les réalisations (achievements) d'un utilisateur
 async function getAchievementsByUserId(userId) {
   try {
-    return await prisma.achievement.findMany({ where: { user_id: userId } });
+    return await prisma.achievment.findMany({ where: { user_id: userId } });
   } catch (error) {
     console.error(error);
     throw error;

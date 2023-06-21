@@ -1,3 +1,5 @@
+'use client';
+
 import { Button, Label, TextInput } from "flowbite-react";
 import router from "next/router";
 import { useState } from "react";
@@ -107,7 +109,7 @@ export default function SignUp() {
           type="password"
         />
       </div>
-      <Button type="submit">Register new account</Button>
+      <Button type="submit" color="failure">Register new account</Button>
     </form>
   );
 }

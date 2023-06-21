@@ -1,15 +1,18 @@
 const express = require("express");
 const achievementRouter = express.Router();
-const achievementModel = require("../prisma/CRUD/achievement");
+const achievementModel = require("../prisma/CRUD/achievment");
 
 // Créer une nouvelle réalisation (achievement)
 achievementRouter.post("/", async (req, res) => {
   try {
-    const { moduleId, userId, data } = req.body;
+    const { moduleId, userId, finalScore, levelModule, success } = req.body;
+    console.log(userId);
     const achievement = await achievementModel.createAchievement(
       moduleId,
       userId,
-      data
+      finalScore,
+      levelModule,
+      success
     );
     res.json(achievement);
   } catch (error) {

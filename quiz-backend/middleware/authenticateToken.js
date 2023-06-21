@@ -37,7 +37,7 @@ const authenticateToken = (req, res, next) => {
 
   try {
     // Vérifier et décoder le token
-    const decoded = jwt.verify(token, "l4Qu1z1n3!");
+    const decoded = jwt.verify(token, "your_secret_key");
 
     // Ajouter les données décodées à l'objet de requête
     req.user = decoded;

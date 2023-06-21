@@ -1,5 +1,4 @@
 'use client';
-
 import { Label, TextInput, Button, Checkbox, Alert } from "flowbite-react";
 import { useState } from 'react';
 import { useRouter } from 'next/router';
@@ -29,9 +28,10 @@ export default function LogIn() {
         })
       });
       
-      const {token, message} = await res.json()
+      const {token, message, user} = await res.json()
       if (token) {
         localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
         router.push('/')
 
     } else if(message){
@@ -55,7 +55,7 @@ return(
     </div>
     <TextInput
       id="email1"
-      placeholder="name@flowbite.com"
+      placeholder="votre email"
       required
       type="email" value={email} onChange={(e) => setEmail(e.target.value)}
     />
@@ -89,9 +89,8 @@ return(
     </span>
     </Alert>)}
 
-
-  <Button type="submit">
-    Submit
+    <Button type="submit" color="failure" >
+    Se connecter
   </Button>
 </form>
 )

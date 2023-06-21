@@ -38,7 +38,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
   };
 
   return (
-    <div className="container w-[50%] my-10 ml-[25%]">
+    <div className="container w-full lg:w-[50%] my-10 mx-auto lg:ml-[25%]">
       <div className="container bg-white h-full px-3 py-1 rounded-md shadow-md">
         <div className="text-center">
           <div className="mx-3 my-3 rounded-3xl w-full">

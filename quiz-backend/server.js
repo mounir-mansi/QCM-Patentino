@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const userRouter = require("./routes/user");
 const questionRouter = require("./routes/question");
 const answerRouter = require("./routes/answer");
+const achievementRouter = require("./routes/achievment");
 
 // Créer une instance du routeur Express
 const app = express();
@@ -11,6 +12,7 @@ app.use(bodyParser.json());
 app.use("/users", userRouter);
 app.use("/question", questionRouter);
 app.use("/answer", answerRouter);
+app.use("/achievment", achievementRouter);
 
 // Configuration de l'application Express
 app.use((req, res, next) => {
