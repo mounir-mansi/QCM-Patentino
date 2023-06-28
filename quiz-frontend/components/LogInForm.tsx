@@ -28,10 +28,12 @@ export default function LogIn() {
         })
       });
       
-      const {token, message, user} = await res.json()
+      const {token, message, user, email:usermail, firstname, lastname} = await res.json()
       if (token) {
         localStorage.setItem("token", token);
         localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem("email", usermail)
+        localStorage.setItem("name", [firstname, lastname].join(" "))
         router.push('/')
 
     } else if(message){

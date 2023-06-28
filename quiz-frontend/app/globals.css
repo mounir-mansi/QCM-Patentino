@@ -32,6 +32,10 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+.min-content-height {
+  min-height: calc(100vh - 60px - 3rem - 68px);
+}
+
 @keyframes move {
   100% {
       transform: translate3d(0, 0, 1px) rotate(360deg);

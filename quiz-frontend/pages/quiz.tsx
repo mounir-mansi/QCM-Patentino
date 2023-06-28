@@ -25,7 +25,7 @@ export default function QuizSelect() {
           <ModuleCard module="PHP" level="difficile" 
           image="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA"/>
 
-          <ModuleCard module="Test" level="facile" 
+          <ModuleCard module="OM" level="facile" 
           image="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA"/>
 
         </div>

@@ -4,12 +4,13 @@ import PiedDePage from "@/components/Footer";
 import Menu from "@/components/Menu";
 import QuestionCard from "@/components/QuestionCard";
 import AnimatedBackground from "@/components/Background";
-import router from "next/router";
+import { useRouter } from "next/router";
 
 const Game = () => {
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentScoreData, setCurrentScoreData] = useState(0);
+  const { query, push } = useRouter();
 
   useEffect(() => {
     const questionsData = localStorage.getItem("questions");
@@ -49,12 +50,14 @@ const Game = () => {
       return (
         <div>
           <Menu />
+          <div className="my-6 min-content-height">
           <QuestionCard
             currentQuestionIndex={currentQuestionIndex}
             questions={questions}
             onSubmit={handleSubmit}
           />
           <AnimatedBackground />
+          </div>
           <PiedDePage />
         </div>
       );
@@ -92,11 +95,20 @@ const Game = () => {
           body: JSON.stringify({
             moduleId: moduleId,
             userId: userId,
-            finalScore: finalScore,
+            finalScore: parseInt(finalScore??"0")/questions.length*100,
             levelModule: levelModule,
             success: success,
           }),
         });
+        
+        localStorage.setItem("endQuizData",JSON.stringify({
+          moduleId: moduleId,
+          userId: userId,
+          finalScore: parseInt(finalScore??"0")/questions.length*100,
+          levelModule: levelModule,
+          success: success,
+        }))
+        push("/endscore");
         console.log(res);
         // if (res.ok) {
         //   router.push('/endscore')
@@ -109,14 +121,15 @@ const Game = () => {
       }
       // Effectuez ici vos opérations asynchrones, comme l'appel à l'API
 
-      return (
-        <div>
-          <Menu />
-          <h1>Score total: {currentScoreData}/{questions.length}</h1>
-          <AnimatedBackground />
-          <PiedDePage />
-        </div>
-      );
+      // return (
+        
+      //   <div>
+      //     <Menu />
+      //     <h1>Score total: {currentScoreData}/{questions.length}</h1>
+      //     <AnimatedBackground />
+      //     <PiedDePage />
+      //   </div>
+      // );
       // } catch (error) {
       //   console.error(error);
       // }

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { Button, Card } from "flowbite-react";
 import "../app/globals.css";
@@ -6,66 +6,63 @@ import PiedDePage from "@/components/Footer";
 import Menu from "@/components/Menu";
 import AnimatedBackground from "@/components/Background";
 
-
-
-
 const EndScore = () => {
-  const { query, push } = useRouter();
-
-  const startQuiz = async () => {
-    try {
-      const url = `/api/question?module=${query.module}&level=${query.level}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const questionsData = await response.json();
-  
-      // Stocke les données des questions dans localStorage
-      localStorage.setItem("questions", JSON.stringify(questionsData));
-  
-      // Navigue vers la page Game
-      push("/games");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  
+  const { push } = useRouter();
+  const [quizData, setQuizData] = useState({});
+  const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
-    // Vérifiez si les paramètres module et level sont présents dans la query string
-    if (!query.module || !query.level) {
-      // Redirigez l'utilisateur vers la page précédente si les paramètres sont manquants
-      // push("/");
+    setQuizData(JSON.parse(localStorage.getItem("endQuizData") ?? ""));
+    if (quizData?.finalScore) {
+      animateScore(quizData?.finalScore);
     }
-  }, [query.module, query.level, push]);
+  }, [quizData?.finalScore]);
+
+  const animateScore = (finalScore) => {
+    let currentScore = 0;
+    const step = Math.ceil(finalScore / 50); // 50 steps for animation
+
+    const interval = setInterval(() => {
+      currentScore += step;
+      if (currentScore >= finalScore) {
+        currentScore = finalScore;
+        clearInterval(interval);
+      }
+      setAnimatedScore(currentScore);
+    }, 20); // 20ms per step, adjust as needed
+  };
+
+  console.log(quizData);
 
   return (
     <div>
       <Menu />
-      <AnimatedBackground/>
+      <AnimatedBackground />
 
-      <div className="grid place-items-center my-6">
-          <Card>
-            <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Test.
-            </h5>
-            <p className="font-normal text-gray-700 dark:text-gray-400 text-center">
-              Ce quiz comporte 20 questions.<br/>
-              Vous disposez de 30 secondes par question.<br/>
-              Etes-vous prêt ?
-            </p>
+      <div className="grid place-items-center my-6 min-content-height">
+        <Card>
+          <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            {quizData?.success
+              ? "Bravo ! Vous avez réussi le quiz"
+              : "Dommage... Vous y étiez presque"}
+          </h5>
+          <p className="font-normal text-gray-700 dark:text-gray-400 text-center">
+            Vous avez obtenu un score de:
+          </p>
 
-            <Button onClick={startQuiz} color="failure" pill>Démarrer le quiz</Button>
+            <span className="text-6xl font-bold">
+              {isNaN(animatedScore) ? 0 : Math.round(animatedScore)}%
+            </span>
 
-          </Card>
+
+          {/* <Button onClick={startQuiz} color="failure" pill>Refaire le quiz</Button>
+            <Button onClick={startQuiz} color="failure" pill>Retour à l'accueil</Button> */}
+        </Card>
       </div>
 
       <PiedDePage />
     </div>
   );
-}
+};
 
 export default EndScore;

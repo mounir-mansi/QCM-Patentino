@@ -10,7 +10,7 @@ export default function signUp() {
         <div className="">
             <Menu/>
 
-            <div className="container flex justify-center w-screen">
+            <div className="container mx-auto flex flex-col items-center justify-center w-screen min-content-height">
 
                 <SignUpForm/>
   

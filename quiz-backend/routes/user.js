@@ -1,6 +1,6 @@
 const modelUser = require("../prisma/CRUD/user");
 const express = require("express");
-
+const jwt = require("jsonwebtoken");
 const userRouter = express.Router();
 
 userRouter.get("/", async (req, res) => {
@@ -46,14 +46,27 @@ userRouter.post("/login", async (req, res) => {
     const { password, email } = req.body;
     // Comparer email et password et renvoyer un token
     const compare = await modelUser.comparePasswords(email, password);
-
+    function generateToken(user) {
+      const payload = {
+        id: user.id,
+        email: user.email,
+      };
+      const token = jwt.sign(payload, "your-secret-key", { expiresIn: "1h" });
+      return token;
+    }
     if (compare === true) {
       const user = await modelUser.findUserByEmail(email);
       if (user) {
-        const { id, email } = user;
+        const { id, email, firstname, lastname } = user;
 
         // Renvoyer les données de l'utilisateur (sans le mot de passe)
-        res.json({ token: email, user: id });
+        res.json({
+          token: generateToken(user),
+          user: id,
+          email: email,
+          firstname: firstname,
+          lastname: lastname,
+        });
       } else {
         res.status(404).json({ message: "Utilisateur introuvable" });
       }

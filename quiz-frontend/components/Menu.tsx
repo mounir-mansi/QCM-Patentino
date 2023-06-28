@@ -1,8 +1,9 @@
+'use client';
 import { Navbar, Dropdown, Avatar, Button } from "flowbite-react";
 import Logo from "../public/assets/logo_Quizine.png"
 import Image from 'next/image'
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 // import { useRouter } from "next/router";
 
 export default function Menu() {
@@ -12,8 +13,69 @@ export default function Menu() {
   // const goToLogIn = () => {
   //   router.push('/pages/logIn')
   // }
+const { push } = useRouter();
+ const [email, setEmail]= useState("");
+ const [name, setName]= useState("");
+ useEffect(()=>{ 
+  setEmail( localStorage.getItem("email")??"");
+  setName( localStorage.getItem("name")??"");
+},[])
+
+const logOut =() =>{
+  localStorage.removeItem("email")
+  localStorage.removeItem("name")
+  localStorage.removeItem("user")
+  localStorage.removeItem("token")
+  push("/");
+}
+
 
   const pathName =usePathname();
+  const userDropdown = email?.length? (
+  <Dropdown
+  disabled={false}
+  arrowIcon={false}
+  inline={true}
+  label={<Avatar alt="User settings" img="https://flowbite.com/docs/images/people/profile-picture-5.jpg" rounded={true}/>}
+>
+  <Dropdown.Header>
+    <span className="block text-sm">
+      {name}
+    </span>
+    <span className="block truncate text-sm font-medium">
+      {email}
+    </span>
+  </Dropdown.Header>
+
+  <Dropdown.Item onClick={logOut}>
+    Sign out
+  </Dropdown.Item>
+</Dropdown>
+):null
+
+    const logButton = !email?.length?(
+      <>
+      <Button
+      color="failure"
+      size="sm"
+      pill
+      href="/logIn">
+      <p>
+        Log In 
+      </p>
+    </Button>
+    <Button
+      color="failure"
+      size="sm"
+      pill
+      outline
+      href="/signUp">
+      <p>
+        Sign Up 
+      </p>
+    </Button>
+    </>
+    ):null
 
 return (
 <div   className="dark bg-black">
@@ -31,29 +93,11 @@ return (
       <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
       </span>
     </Navbar.Brand>
-    <div className="flex md:order-2">
-      <Dropdown
-        disabled={false}
-        arrowIcon={false}
-        inline={true}
-        label={<Avatar alt="User settings" img="https://flowbite.com/docs/images/people/profile-picture-5.jpg" rounded={true}/>}
-      >
-        <Dropdown.Header>
-          <span className="block text-sm">
-            Joe LaMouk
-          </span>
-          <span className="block truncate text-sm font-medium">
-            name@joelamouk.com
-          </span>
-        </Dropdown.Header>
-        <Dropdown.Item>
-          Mon Profil
-        </Dropdown.Item>
-        <Dropdown.Divider />
-        <Dropdown.Item>
-          Sign out
-        </Dropdown.Item>
-      </Dropdown>
+    <div className="flex md:order-2"> 
+    <div className="flex flex-row gap-4">
+    {userDropdown}
+    {logButton}
+    </div>
       <Navbar.Toggle />
     </div>
     <Navbar.Collapse>
@@ -73,27 +117,7 @@ return (
         Ajouter un Quiz
       </Navbar.Link>
     </Navbar.Collapse>
-    <div className="flex flex-row gap-4">
-    <Button
-      color="failure"
-      size="sm"
-      pill
-      href="/logIn">
-      <p>
-        Log In 
-      </p>
-    </Button>
-    <Button
-      color="failure"
-      size="sm"
-      pill
-      outline
-      href="/signUp">
-      <p>
-        Sign Up 
-      </p>
-    </Button>
-    </div>
+
   </Navbar>
   </div>)
 }
