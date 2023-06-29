@@ -16,9 +16,11 @@ export default function Menu() {
 const { push } = useRouter();
  const [email, setEmail]= useState("");
  const [name, setName]= useState("");
+ const [id, setId]= useState(0);
  useEffect(()=>{ 
   setEmail( localStorage.getItem("email")??"");
   setName( localStorage.getItem("name")??"");
+  // setId( localStorage.getItem("user")??"0");
 },[])
 
 const logOut =() =>{
@@ -53,28 +55,34 @@ const logOut =() =>{
 </Dropdown>
 ):null
 
-    const logButton = !email?.length?(
-      <>
-      <Button
-      color="failure"
-      size="sm"
-      pill
-      href="/logIn">
-      <p>
-        Log In 
-      </p>
-    </Button>
+  const logButton = !email?.length?(
+    <>
     <Button
-      color="failure"
-      size="sm"
-      pill
-      outline
-      href="/signUp">
-      <p>
-        Sign Up 
-      </p>
-    </Button>
-    </>
+    color="failure"
+    size="sm"
+    pill
+    href="/logIn">
+    <p>
+      Log In 
+    </p>
+  </Button>
+  <Button
+    color="failure"
+    size="sm"
+    pill
+    outline
+    href="/signUp">
+    <p>
+      Sign Up 
+    </p>
+  </Button>
+  </>
+  ):null
+
+  const mesScores = email?.length?(
+    <Navbar.Link href="/myscores" active={pathName==="/myscores"}>
+    Mes scores
+  </Navbar.Link>
     ):null
 
 return (
@@ -110,12 +118,10 @@ return (
       <Navbar.Link href="/quiz" active={pathName==="/quiz"}>
         Quiz
       </Navbar.Link>
-      <Navbar.Link href="/">
-        Mes scores
-      </Navbar.Link>
-      <Navbar.Link href="/">
+      {mesScores}
+      {/* <Navbar.Link href="/">
         Ajouter un Quiz
-      </Navbar.Link>
+      </Navbar.Link> */}
     </Navbar.Collapse>
 
   </Navbar>

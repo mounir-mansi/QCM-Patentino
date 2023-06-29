@@ -70,7 +70,18 @@ async function deleteAchievement(achievementId) {
 // Récupérer toutes les réalisations (achievements) d'un utilisateur
 async function getAchievementsByUserId(userId) {
   try {
-    return await prisma.achievment.findMany({ where: { user_id: userId } });
+    return await prisma.achievment.findMany({
+      include: {
+        module: {
+          select: {
+            module_title: true,
+          },
+        },
+      },
+      where: {
+        user_id: userId,
+      },
+    });
   } catch (error) {
     console.error(error);
     throw error;

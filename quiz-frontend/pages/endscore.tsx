@@ -11,6 +11,10 @@ const EndScore = () => {
   const [quizData, setQuizData] = useState({});
   const [animatedScore, setAnimatedScore] = useState(0);
 
+  const goToMyScores = () => {
+    push("/myscores");
+  }
+
   useEffect(() => {
     setQuizData(JSON.parse(localStorage.getItem("endQuizData") ?? ""));
     if (quizData?.finalScore) {
@@ -43,20 +47,23 @@ const EndScore = () => {
         <Card>
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {quizData?.success
-              ? "Bravo ! Vous avez réussi le quiz"
-              : "Dommage... Vous y étiez presque"}
+              ? "Bravo ! Vous avez réussi le quiz."
+              : "Dommage... Vous y étiez presque."}
           </h5>
           <p className="font-normal text-gray-700 dark:text-gray-400 text-center">
             Vous avez obtenu un score de:
           </p>
 
-            <span className="text-6xl font-bold">
+            <span className={`${
+              quizData?.success ? "text-green-700" : "text-red-700"
+            } text-center text-6xl font-bold`}
+            >
               {isNaN(animatedScore) ? 0 : Math.round(animatedScore)}%
             </span>
 
 
-          {/* <Button onClick={startQuiz} color="failure" pill>Refaire le quiz</Button>
-            <Button onClick={startQuiz} color="failure" pill>Retour à l'accueil</Button> */}
+          <Button onClick={goToMyScores} color="failure" pill>Voir mes scores</Button>
+            
         </Card>
       </div>
 

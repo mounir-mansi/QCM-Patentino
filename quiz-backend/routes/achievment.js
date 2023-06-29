@@ -74,7 +74,8 @@ achievementRouter.delete("/:id", async (req, res) => {
 // Récupérer toutes les réalisations (achievements) d'un utilisateur
 achievementRouter.get("/user/:userId", async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = parseInt(req.params.userId);
+    console.log(req.params);
     const achievements = await achievementModel.getAchievementsByUserId(userId);
     res.json(achievements);
   } catch (error) {
