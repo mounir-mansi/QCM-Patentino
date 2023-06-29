@@ -4,11 +4,11 @@ import { Card } from "flowbite-react";
 import { Button } from 'flowbite-react';
 
 export default function ModuleCard(props: any) {
-  {props.module} {props.level}
+  {props.module} {props.level} {props.image}
     return (
 
 <div className="max-w-sm">
-  <Card imgSrc="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA">
+  <Card className="h-100"imgSrc={props.image}>
     <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       Quiz {props.module}  Niveau {props.level}
     </h5>

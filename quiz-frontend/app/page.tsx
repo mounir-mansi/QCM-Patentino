@@ -1,9 +1,10 @@
 'use client';
+import "../app/globals.css";
 import AnimatedBackground from "@/components/Background";
 import Menu from "../components/Menu";
 import PiedDePage from '@/components/Footer';
 import Title from '@/components/Title';
-import 'animate.css/animate.min.css';
+import { Card } from "flowbite-react";
 
 
 export default function Home() {
@@ -13,11 +14,23 @@ export default function Home() {
 
       <div className="my-6 min-content-height">
         <div className="grid place-items-center">
-          <Title title="hello" />
-          <div className="welcome-animation bg-gray-100 p-6 rounded-md">
-            <h1 className="text-3xl font-bold mb-4">Bienvenue dans la Quizine.</h1>
-            <h2 className="text-xl">Deviendras-tu le chef de la Quizine en réussissant tous nos quiz ?</h2>
-          </div>
+          <Title title="Welcome to the Quizine" />
+
+          <div>
+              <Card className="h-128 mb-6 mx-24 bg-[url(https://media.tenor.com/U0Ny_4eBUM4AAAAd/cuisine-femme.gif)] bg-cover bg-no-repeat rounded-4xl">
+                <div className="mx-24 text-center text-[#DC3C35] bg-beige bg-opacity-60 rounded-2xl p-10">
+                  <h5 className="text-4xl font-extrabold tracking-wide text-shadow-white">
+                    Bienvenue sur la web app de quiz ULTIME !
+                  </h5>
+                  <p className="text-center text-[#1F2937] font-bold text-xl py-4">
+                    Tu veux tester tes connaissances et te mettre au défi ? Tu penses savoir où est ta place ? Tu es au bon endroit jeune quiziniste ! Seras-tu vraiment prêt à devenir...
+                  </p>
+                  <p className="text-4xl font-extrabold tracking-wide rounded-lg">
+                    LE.A CHEF.FE DE LA QUIZINE ???
+                  </p>
+                </div>
+              </Card>
+            </div>
         </div>
         <AnimatedBackground />
       </div>

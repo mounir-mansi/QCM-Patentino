@@ -20,13 +20,13 @@ export default function QuizSelect() {
           image="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA"/>
 
           <ModuleCard module="PHP" level="intermediaire" 
-          image="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA"/>
+          image="https://www.audit-conseil-formation.com/formations/uploads/glossaire_image_30.webp"/>
               
           <ModuleCard module="PHP" level="difficile" 
-          image="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA"/>
+          image="https://kinsta.com/fr/wp-content/uploads/sites/4/2020/03/tutoriels-php.png"/>
 
           <ModuleCard module="OM" level="facile" 
-          image="https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA"/>
+          image="https://www.sportbuzzbusiness.fr/wp-content/uploads/2016/11/maillots-olympique-de-marseille-2015-2016-logo-1050x700.jpg"/>
 
         </div>
 
