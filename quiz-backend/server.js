@@ -30,7 +30,6 @@ app.use((req, res, next) => {
 });
 app.set("port", process.env.PORT || 5500);
 
-// ... Reste de votre code ...
 // Démarrer le serveur
 app.listen(app.get("port"), () => {
   console.log(

@@ -16,8 +16,8 @@ async function createAchievement(moduleId, userId, score, level, success) {
         score: parseInt(score),
         level: level,
         success: success,
-        date: new Date(), // Utilisez la date actuelle ou la valeur souhaitée
-        total_duration: 0, // Utilisez la valeur souhaitée
+        date: new Date(),
+        total_duration: 0,
       },
     });
   } catch (error) {

@@ -12,12 +12,12 @@ export default function Home() {
     <div>
       <Menu />
 
-      <div className="my-6 min-content-height">
-        <div className="grid place-items-center">
+      <div className="my-6 min-content-height ">
+        <div className="grid place-items-center ">
           <Title title="Welcome to the Quizine" />
 
           <div>
-              <Card className="h-128 mb-6 mx-24 bg-[url(https://media.tenor.com/U0Ny_4eBUM4AAAAd/cuisine-femme.gif)] bg-cover bg-no-repeat rounded-4xl">
+              <Card className="container h-128 mb-6 mx-24 bg-[url(https://media.tenor.com/U0Ny_4eBUM4AAAAd/cuisine-femme.gif)] bg-cover bg-no-repeat rounded-4xl">
                 <div className="mx-24 text-center text-[#DC3C35] bg-beige bg-opacity-60 rounded-2xl p-10">
                   <h5 className="text-4xl font-extrabold tracking-wide text-shadow-white">
                     Bienvenue sur la web app de quiz ULTIME !

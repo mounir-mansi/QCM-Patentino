@@ -28,7 +28,7 @@ const logOut =() =>{
   localStorage.removeItem("name")
   localStorage.removeItem("user")
   localStorage.removeItem("token")
-  push("/");
+  push("/logIn");
 }
 
 

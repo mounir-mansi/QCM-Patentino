@@ -1,3 +1,4 @@
+const authenticate = require("../middleware/authenticateToken");
 const modelQuestion = require("../prisma/CRUD/question");
 const express = require("express");
 
@@ -24,7 +25,7 @@ questionRouter.post("/", async (req, res) => {
   }
 });
 
-questionRouter.get("/", async (req, res) => {
+questionRouter.get("/", authenticate, async (req, res) => {
   try {
     const { module, level } = req.query;
 
