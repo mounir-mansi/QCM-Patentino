@@ -1,40 +1,168 @@
+// import React, { useEffect, useState } from "react";
+// import Timer from "./Timer";
+// import { Button } from 'flowbite-react';
+// import AnswerButton from "./AnswerButton";
+
+// type QuestionCardProps = {
+//   currentQuestionIndex: number;
+//   questions: {question_title: string; id: number}[];
+//   onSubmit: (selectedAnswer: number) => void;
+// };
+
+// const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, questions, onSubmit }) => {
+//   const [answers, setAnswers] = useState<{ id: number, title_answer: string }[]>([]);
+//   const [selectedAnswer, setSelectedAnswer] = useState(0);
+//   const [timerReset, setTimerReset] = useState(false);
+  
+//   useEffect(() => {
+//     getAnswers(questions[currentQuestionIndex].id)
+//       .then((values) => setAnswers(values));
+//     setTimerReset(false); // Réinitialiser l'état du timerReset lorsque la question change
+//   }, [questions, currentQuestionIndex]);
+
+//   const handleAnswerClick = (answerId: number) => {
+//     setSelectedAnswer(answerId);
+//   };
+
+//   const handleTerminated = () => {
+//     onSubmit(selectedAnswer);
+//     setTimerReset(true); // Définir l'état du timerReset à true lorsque le timer atteint zéro
+//   };
+
+//   const handleValidateClick = () => {
+//     setTimerReset(true);
+//     setTimeout(() => {
+//       onSubmit(selectedAnswer);
+//       setTimerReset(false);
+//     }, 0);
+//   };
+
+//   return (
+//     <div className="container w-full lg:w-[50%] my-10 mx-auto lg:ml-[25%]">
+//       <div className="container bg-white h-full px-3 py-1 rounded-md shadow-md">
+//         <div className="text-center">
+//           <div className="mx-3 my-3 rounded-3xl w-full">
+//             <div className="text-black text-2xl">
+//               <Timer onTerminated={handleTerminated} timerReset={timerReset} />
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       <div className="container -mb-10 h-full p-3">
+//         <div className="text-center">
+//           <button className="bg-gray-dark mx-3 rounded-full lg:w-[40%] cursor-default shadow sm:w-[50%]">
+//             <div className="my-3 text-white lg:text-2xl sm:text-xl">
+//               Question {currentQuestionIndex + 1}/{questions.length}
+//             </div>
+//           </button>
+//         </div>
+//       </div>
+
+//       <div className="container bg-white h-full p-3 rounded-md shadow-md">
+//         <ul className="text-center my-10">
+//           <li className="my-5 text-2xl text-black">{questions[currentQuestionIndex].question_title}</li>
+//           <div className="flex flex-col items-center">
+//             {answers.map((answer) => (
+//               <AnswerButton
+//                 key={answer.id}
+//                 answer={answer}
+//                 isClicked={selectedAnswer === answer.id}
+//                 onClick={handleAnswerClick}
+//               />
+//             ))}
+//           </div>
+//         </ul>
+//       </div>
+
+//       <div className="container h-full p-3 flex justify-center items-center">
+//         <Button color="success" pill className="shadow-md my-3 w-[70%]" onClick={handleValidateClick}>
+//           Valider
+//         </Button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// const getAnswers = async (questionId: number): Promise<{ id: number, title_answer: string }[]> => {
+//   try {
+//     const url = `/api/answer/question/${questionId}`;
+//     const response = await fetch(url, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     });
+//     const answersData = await response.json();
+//     console.log({ answersData });
+//     return answersData;
+//   } catch (error) {
+//     console.error(error);
+//     return [];
+//   }
+// };
+
+// export default QuestionCard;
+
+// ajout surlignage
+
 import React, { useEffect, useState } from "react";
 import Timer from "./Timer";
 import { Button } from 'flowbite-react';
 import AnswerButton from "./AnswerButton";
 
+type Answer = {
+  id: number;
+  title_answer: string;
+  result_answer: boolean; // ajouté pour savoir si c'est la bonne réponse
+};
+
+type Question = {
+  id: number;
+  question_title: string;
+};
+
 type QuestionCardProps = {
   currentQuestionIndex: number;
-  questions: {question_title: string; id: number}[];
+  questions: Question[];
   onSubmit: (selectedAnswer: number) => void;
 };
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, questions, onSubmit }) => {
-  const [answers, setAnswers] = useState<{ id: number, title_answer: string }[]>([]);
-  const [selectedAnswer, setSelectedAnswer] = useState(0);
-  const [timerReset, setTimerReset] = useState(false);
-  
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [selectedAnswer, setSelectedAnswer] = useState<number>(0);
+  const [validated, setValidated] = useState<boolean>(false);
+  const [timerReset, setTimerReset] = useState<boolean>(false);
+
   useEffect(() => {
-    getAnswers(questions[currentQuestionIndex].id)
-      .then((values) => setAnswers(values));
-    setTimerReset(false); // Réinitialiser l'état du timerReset lorsque la question change
+    getAnswers(questions[currentQuestionIndex].id).then((values) => setAnswers(values));
+    setSelectedAnswer(0);
+    setValidated(false);
+    setTimerReset(false);
   }, [questions, currentQuestionIndex]);
 
   const handleAnswerClick = (answerId: number) => {
-    setSelectedAnswer(answerId);
-  };
-
-  const handleTerminated = () => {
-    onSubmit(selectedAnswer);
-    setTimerReset(true); // Définir l'état du timerReset à true lorsque le timer atteint zéro
+    if (!validated) setSelectedAnswer(answerId); // empêcher de changer après validation
   };
 
   const handleValidateClick = () => {
-    setTimerReset(true);
+    if (!selectedAnswer) return; // pas de réponse sélectionnée
+    setValidated(true);
     setTimeout(() => {
       onSubmit(selectedAnswer);
-      setTimerReset(false);
-    }, 0);
+      setValidated(false); // reset si tu passes à la question suivante
+      setSelectedAnswer(0);
+    }, 2000); // délai pour montrer le surlignage
+  };
+
+  const handleTerminated = () => {
+    setValidated(true);
+    setTimeout(() => {
+      onSubmit(selectedAnswer);
+      setTimerReset(true);
+      setValidated(false);
+      setSelectedAnswer(0);
+    }, 1000);
   };
 
   return (
@@ -68,6 +196,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
                 key={answer.id}
                 answer={answer}
                 isClicked={selectedAnswer === answer.id}
+                validated={validated} // <-- important
                 onClick={handleAnswerClick}
               />
             ))}
@@ -84,17 +213,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
   );
 };
 
-const getAnswers = async (questionId: number): Promise<{ id: number, title_answer: string }[]> => {
+const getAnswers = async (questionId: number): Promise<Answer[]> => {
   try {
     const url = `/api/answer/question/${questionId}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } });
     const answersData = await response.json();
-    console.log({ answersData });
     return answersData;
   } catch (error) {
     console.error(error);

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import React from 'react';
 
 export default function Timer(props: any) {
-  const { startingMinutes = 0, startingSeconds = 20, onTerminated, timerReset } = props;
+  const { startingMinutes = 0, startingSeconds = 45, onTerminated, timerReset } = props;
   const [mins, setMinutes] = useState(startingMinutes);
   const [secs, setSeconds] = useState(startingSeconds);
 
