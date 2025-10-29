@@ -7,17 +7,17 @@ const questionRouter = express.Router();
 // Créer une question
 questionRouter.post("/", async (req, res) => {
   try {
-    const { question_title, question_level, question_duration } = req.body;
+    const { question_title, question_level, question_duration, module_id } =
+      req.body;
 
     const question = await modelQuestion.createQuestion({
-      question_title: question_title,
-      question_level: question_level,
-      question_duration: question_duration,
+      question_title,
+      question_level,
+      question_duration,
+      module_id,
     });
 
     console.log(question);
-
-    // Envoyer la liste des questions en tant que réponse JSON
     res.json(question);
   } catch (error) {
     console.error(error);
@@ -27,8 +27,8 @@ questionRouter.post("/", async (req, res) => {
   }
 });
 
-// Récupérer toutes les questions d'un module et niveau, mélangées
-questionRouter.get("/", authenticate, async (req, res) => {
+// Récupérer 50 questions aléatoires d’un module et niveau
+questionRouter.get("/random-50", authenticate, async (req, res) => {
   try {
     const { module, level } = req.query;
 
@@ -37,14 +37,32 @@ questionRouter.get("/", authenticate, async (req, res) => {
       level
     );
 
-    // // Mélanger les questions
-    // questions = questions.sort(() => Math.random() - 0.5);
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({ message: "Aucune question trouvée." });
+    }
 
-    // // Mélanger les réponses de chaque question
-    // questions = questions.map((q) => {
-    //   const shuffledAnswers = q.Answer.sort(() => Math.random() - 0.5);
-    //   return { ...q, Answer: shuffledAnswers };
-    // });
+    // Mélanger et prendre 50 questions
+    const shuffled = questions.sort(() => 0.5 - Math.random());
+    const random50 = shuffled.slice(0, 50);
+
+    res.json(random50);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la récupération des questions." });
+  }
+});
+
+// Récupérer toutes les questions d'un module et niveau (toutes)
+questionRouter.get("/", authenticate, async (req, res) => {
+  try {
+    const { module, level } = req.query;
+
+    const questions = await modelQuestion.getQuestionsByModuleAndLevel(
+      module,
+      level
+    );
 
     res.json(questions);
   } catch (error) {
@@ -56,21 +74,20 @@ questionRouter.get("/", authenticate, async (req, res) => {
 // Récupérer une question par ID
 questionRouter.get("/:id", async (req, res) => {
   try {
-    const questionId = req.params.id;
+    const questionId = parseInt(req.params.id);
 
-    // Récupérer tous les questions depuis la base de données avec Prisma
-    const question = await prisma.question.findFirst({
-      where: {
-        id: parseInt(questionId),
-      },
-    });
-    // Envoyer la liste des questions en tant que réponse JSON
+    const question = await modelQuestion.getQuestionById(questionId);
+
+    if (!question) {
+      return res.status(404).json({ message: "Question non trouvée." });
+    }
+
     res.json(question);
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Erreur lors de la récupération des questions." });
+      .json({ message: "Erreur lors de la récupération de la question." });
   }
 });
 
