@@ -4,6 +4,7 @@ const userRouter = require("./routes/user");
 const questionRouter = require("./routes/question");
 const answerRouter = require("./routes/answer");
 const achievementRouter = require("./routes/achievment");
+const quizSessionRouter = require("./routes/quizSession");
 
 // Créer une instance du routeur Express
 const app = express();
@@ -13,6 +14,7 @@ app.use("/users", userRouter);
 app.use("/question", questionRouter);
 app.use("/answer", answerRouter);
 app.use("/achievment", achievementRouter);
+app.use("/quiz-session", quizSessionRouter);
 
 // Configuration de l'application Express
 app.use((req, res, next) => {
@@ -28,6 +30,7 @@ app.use((req, res, next) => {
 
   next();
 });
+
 app.set("port", process.env.PORT || 5500);
 
 // Démarrer le serveur

@@ -21,9 +21,9 @@ async function findUserByEmail(email) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+  } // finally {
+  //   await prisma.$disconnect();
+  // }
 }
 
 // Fonction pour comparer les mots de passe
