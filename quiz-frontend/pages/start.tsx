@@ -22,7 +22,7 @@ const StartQuiz = () => {
   useEffect(() => {
     const loadQuiz = async () => {
       try {
-        const url = `/api/question?module=${query.module}&level=${query.level}`;
+        const url = `/api/question/random-50?module=${query.module}&level=${query.level}`;
         const token = localStorage.getItem("token");
         const response = await fetch(url, {
           method: "GET",
