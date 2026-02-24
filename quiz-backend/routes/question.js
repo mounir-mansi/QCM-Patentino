@@ -1,23 +1,22 @@
-const authenticate = require("../middleware/authenticateToken");
-const modelQuestion = require("../prisma/CRUD/question");
 const express = require("express");
-
 const questionRouter = express.Router();
+const modelQuestion = require("../prisma/CRUD/question");
+const authenticate = require("../middleware/authenticateToken");
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 // Créer une question
 questionRouter.post("/", async (req, res) => {
   try {
     const { question_title, question_level, question_duration, module_id } =
       req.body;
-
     const question = await modelQuestion.createQuestion({
       question_title,
       question_level,
       question_duration,
       module_id,
     });
-
-    console.log(question);
+    console.log("Question créée:", question);
     res.json(question);
   } catch (error) {
     console.error(error);
@@ -27,37 +26,67 @@ questionRouter.post("/", async (req, res) => {
   }
 });
 
-// Récupérer 50 questions aléatoires d’un module et niveau
 questionRouter.get("/random-50", authenticate, async (req, res) => {
   try {
-    const { module, level, excludedIds } = req.query;
-    // excludedIds est une liste d'IDs de questions déjà posées
+    const { module, level } = req.query;
+    const userId = req.userData?.userId;
 
-    // Convertir excludedIds en tableau d'entiers si nécessaire
-    let exclude = [];
-    if (excludedIds) {
-      exclude = excludedIds.split(",").map((id) => parseInt(id));
+    if (!userId) {
+      return res.status(401).json({ message: "Utilisateur non authentifié" });
     }
 
-    // Récupérer toutes les questions correspondantes
-    let questions = await modelQuestion.getQuestionsByModuleAndLevel(
+    const questions = await modelQuestion.getQuestionsByModuleAndLevel(
       module,
-      level
+      level,
     );
+    console.log("module:", module, "level:", level);
+    console.log("questions trouvées:", questions?.length);
 
-    // Filtrer celles déjà passées
-    questions = questions.filter((q) => !exclude.includes(q.id));
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({ message: "Aucune question trouvée." });
+    }
 
-    // Mélanger aléatoirement
-    questions.sort(() => Math.random() - 0.5);
+    const allSessions = await prisma.quizsession.findMany({
+      where: { user_id: userId },
+    });
 
-    // Limiter à 50
-    const selectedQuestions = questions.slice(0, 50);
+    const excludeIds = allSessions.flatMap((s) =>
+      JSON.parse(s.questionIds || "[]"),
+    );
+    const uniqueExcludeIds = [...new Set(excludeIds)];
 
-    res.json(selectedQuestions);
+    let available = questions.filter((q) => !uniqueExcludeIds.includes(q.id));
+    console.log("excludeIds count:", uniqueExcludeIds.length);
+    console.log("available count:", available.length);
+
+    if (available.length === 0) {
+      console.info(
+        `Toutes les questions ont été vues, remise à zéro pour ${userId}.`,
+      );
+      await prisma.quizsession.deleteMany({ where: { user_id: userId } });
+      available = [...questions];
+    }
+
+    const shuffled = available.sort(() => Math.random() - 0.5);
+    const random50 = shuffled.slice(0, 25);
+
+    await prisma.quizsession.create({
+      data: {
+        user_id: userId,
+        questionIds: JSON.stringify(random50.map((q) => q.id)),
+        wrongAnswerIds: "[]",
+        score: 0,
+        totalQuestions: random50.length,
+        updatedAt: new Date(),
+      },
+    });
+
+    res.json(random50);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erreur lors de la génération du quiz." });
+    console.error("Erreur /random-50 :", error);
+    res
+      .status(500)
+      .json({ message: "Erreur lors de la récupération des questions." });
   }
 });
 

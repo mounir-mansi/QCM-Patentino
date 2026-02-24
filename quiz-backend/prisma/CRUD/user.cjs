@@ -1,6 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+require("dotenv/config");
+const prisma = require("../prisma.config.js");
 
 // Créer un nouvel utilisateur
 async function createUser(data) {
@@ -9,9 +8,9 @@ async function createUser(data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+  } //finally {
+  //   await prisma.$disconnect();
+  // }
 }
 
 // Créer un nouvel utilisateur
@@ -45,7 +44,7 @@ async function comparePasswords(email, password) {
   } catch (error) {
     console.error(
       "Une erreur s'est produite lors de la comparaison des mots de passe :",
-      error
+      error,
     );
     throw error;
   }
@@ -58,9 +57,9 @@ async function getUserById(userId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+  } // finally {
+  //   await prisma.$disconnect();
+  // }
 }
 
 // Mettre à jour un utilisateur
@@ -70,9 +69,9 @@ async function updateUser(userId, data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+  } // finally {
+  //   await prisma.$disconnect();
+  // }
 }
 
 // Supprimer un utilisateur
@@ -82,9 +81,12 @@ async function deleteUser(userId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
-  }
+  } // finally {
+  //   await prisma.$disconnect();
+  // }
+}
+async function getAllUsers() {
+  return prisma.user.findMany();
 }
 
 module.exports = {
@@ -94,4 +96,5 @@ module.exports = {
   getUserById,
   updateUser,
   deleteUser,
+  getAllUsers,
 };

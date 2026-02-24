@@ -21,7 +21,7 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   );
   if (req.method == "OPTIONS") {
     res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
@@ -36,6 +36,6 @@ app.set("port", process.env.PORT || 5500);
 // Démarrer le serveur
 app.listen(app.get("port"), () => {
   console.log(
-    `Le serveur est en cours d'exécution sur le port ${app.get("port")}`
+    `Le serveur est en cours d'exécution sur le port ${app.get("port")}`,
   );
 });
