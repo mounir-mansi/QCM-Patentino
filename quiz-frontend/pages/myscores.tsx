@@ -97,6 +97,18 @@ const TableScores =  () =>  {
     )
 
 };
+type ModuleInfo = {
+  module_title: string;
+};
+
+type Achievment = {
+  id: number;
+  module: ModuleInfo;
+  level: string;
+  score: number;
+  success: boolean;
+  date: string;
+};
 
 export default TableScores
 function push(arg0: string) {

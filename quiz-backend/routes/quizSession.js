@@ -4,6 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// POST /quiz-session/start
 router.post("/start", async (req, res) => {
   try {
     const { userId } = req.body;
@@ -12,13 +13,15 @@ router.post("/start", async (req, res) => {
       return res.status(400).json({ error: "userId requis" });
     }
 
-    // Tirer 50 questions aléatoires (MySQL → RAND())
+    // 1️⃣ Sélection aléatoire de 50 questions (MySQL → RAND())
     const questions = await prisma.$queryRawUnsafe(`
       SELECT * FROM Question ORDER BY RAND() LIMIT 50;
     `);
 
+    // 2️⃣ Extraire les IDs des questions
     const questionIds = questions.map((q) => q.id);
 
+    // 3️⃣ Créer la session
     const session = await prisma.quizSession.create({
       data: {
         user_id: userId,
@@ -29,6 +32,7 @@ router.post("/start", async (req, res) => {
       },
     });
 
+    // 4️⃣ Retourner la session + les questions tirées
     res.status(201).json({
       sessionId: session.id,
       questions,

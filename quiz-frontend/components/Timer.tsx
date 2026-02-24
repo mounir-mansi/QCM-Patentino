@@ -1,41 +1,54 @@
-import { useEffect, useState } from "react";
-import React from 'react';
+import { useEffect, useState, useRef } from "react";
 
-export default function Timer(props: any) {
-  const { startingMinutes = 0, startingSeconds = 45, onTerminated, timerReset } = props;
-  const [mins, setMinutes] = useState(startingMinutes);
-  const [secs, setSeconds] = useState(startingSeconds);
+interface TimerProps {
+  startingMinutes?: number;
+  startingSeconds?: number;
+  onTerminated: () => void;
+  questionId: string | number; // clé unique par question
+}
 
+export default function Timer({
+  startingMinutes = 0,
+  startingSeconds = 45,
+  onTerminated,
+  questionId
+}: TimerProps) {
+  const [secondsLeft, setSecondsLeft] = useState(startingMinutes * 60 + startingSeconds);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset et démarrage du timer à chaque question
   useEffect(() => {
-    let sampleInterval = setInterval(() => {
-      if (secs > 0) {
-        setSeconds(secs - 1);
-      } else if (mins > 0) {
-        setMinutes(mins - 1);
-        setSeconds(59);
-      } else {
-        // Le timer est arrivé à zéro
-        onTerminated();
-        clearInterval(sampleInterval);
-      }
+    // Nettoyer l'ancien intervalle si existant
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    // Réinitialiser le compteur
+    setSecondsLeft(startingMinutes * 60 + startingSeconds);
+
+    // Lancer l'intervalle
+    intervalRef.current = setInterval(() => {
+      setSecondsLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          onTerminated();
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
-    if (timerReset) {
-      setMinutes(startingMinutes);
-      setSeconds(startingSeconds);
-    }
-
+    // Cleanup à la destruction du composant
     return () => {
-      clearInterval(sampleInterval);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [secs, mins, onTerminated, timerReset, startingMinutes, startingSeconds]);
+  }, [questionId, startingMinutes, startingSeconds, onTerminated]); // dépendance sur questionId !
+
+  const mins = Math.floor(secondsLeft / 60);
+  const secs = secondsLeft % 60;
 
   return (
     <div>
       <p>
-      Temps restant :
-        {" "}
-        {mins < 10 ? `0${mins}` : mins}:{secs < 10 ? `0${secs}` : secs}
+        Temps restant : {mins < 10 ? `0${mins}` : mins}:{secs < 10 ? `0${secs}` : secs}
       </p>
     </div>
   );
