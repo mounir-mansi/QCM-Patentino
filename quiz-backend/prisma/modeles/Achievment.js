@@ -1,4 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -11,4 +11,4 @@ const Achievement = {
   },
 };
 
-module.exports = Achievement;
+export default Achievement;

@@ -1,18 +1,13 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-// Créer une nouvelle réalisation (achievement)
 async function createAchievement(moduleId, userId, score, level, success) {
   try {
     return await prisma.achievment.create({
       data: {
-        module: {
-          connect: { id: moduleId },
-        },
-        user: {
-          connect: { id: userId },
-        },
+        module: { connect: { id: moduleId } },
+        user: { connect: { id: userId } },
         score: parseInt(score),
         level: level,
         success: success,
@@ -26,12 +21,9 @@ async function createAchievement(moduleId, userId, score, level, success) {
   }
 }
 
-// Obtenir une réalisation (achievement) par ID
 async function getAchievementById(achievementId) {
   try {
-    return await prisma.achievment.findUnique({
-      where: { id: achievementId },
-    });
+    return await prisma.achievment.findUnique({ where: { id: achievementId } });
   } catch (error) {
     console.error(error);
     throw error;
@@ -40,7 +32,6 @@ async function getAchievementById(achievementId) {
   }
 }
 
-// Mettre à jour une réalisation (achievement)
 async function updateAchievement(achievementId, data) {
   try {
     return await prisma.achievment.update({
@@ -55,7 +46,6 @@ async function updateAchievement(achievementId, data) {
   }
 }
 
-// Supprimer une réalisation (achievement)
 async function deleteAchievement(achievementId) {
   try {
     return await prisma.achievment.delete({ where: { id: achievementId } });
@@ -67,20 +57,11 @@ async function deleteAchievement(achievementId) {
   }
 }
 
-// Récupérer toutes les réalisations (achievements) d'un utilisateur
 async function getAchievementsByUserId(userId) {
   try {
     return await prisma.achievment.findMany({
-      include: {
-        module: {
-          select: {
-            module_title: true,
-          },
-        },
-      },
-      where: {
-        user_id: userId,
-      },
+      include: { module: { select: { module_title: true } } },
+      where: { user_id: userId },
     });
   } catch (error) {
     console.error(error);
@@ -90,7 +71,7 @@ async function getAchievementsByUserId(userId) {
   }
 }
 
-module.exports = {
+export default {
   createAchievement,
   getAchievementById,
   updateAchievement,

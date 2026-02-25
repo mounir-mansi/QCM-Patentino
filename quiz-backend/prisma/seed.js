@@ -1,4 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -10,9 +11,9 @@ async function main() {
 
   // Upsert du module pour éviter les doublons
   const module = await prisma.module.upsert({
-    where: { module_title: "PHP" },
+    where: { module_title: "Patentino di muletto" },
     update: {},
-    create: { module_title: "PHP" },
+    create: { module_title: "Patentino di muletto" },
   });
 
   const questionsData = [

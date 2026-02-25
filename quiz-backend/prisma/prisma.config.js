@@ -1,3 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-module.exports = prisma;
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  datasource: {
+    url: process.env.DATABASE_URL,
+  },
+});

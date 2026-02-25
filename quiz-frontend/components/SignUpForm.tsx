@@ -1,40 +1,47 @@
 'use client';
 
 import { Button, Label, TextInput } from "flowbite-react";
-import router from "next/router";
+import { useRouter } from "next/navigation"; // ✅ App Router
 import { useState } from "react";
 
 export default function SignUp() {
+  const router = useRouter(); // ✅ hook, pas un import direct
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSignup = async (e: { preventDefault: () => void; }) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Les mots de passe ne correspondent pas.");
+      return;
+    }
 
     try {
       const res = await fetch("/api/users/signup", {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email,
-          password: password,
+          email,
+          password,
           firstname: firstName,
           lastname: lastName,
         }),
       });
 
       if (res.ok) {
-        router.push('/login')
+        router.push('/login');
       } else {
-        throw new Error("Error during user signup.");
+        const { message } = await res.json();
+        setErrorMessage(message ?? "Erreur lors de l'inscription.");
       }
     } catch (error) {
       console.error(error);
-      // Gérer l'erreur de manière appropriée (affichage d'un message d'erreur, etc.)
+      setErrorMessage("Erreur réseau.");
     }
   };
 
@@ -59,7 +66,7 @@ export default function SignUp() {
       </div>
       <div>
         <div className="mb-2 block">
-          <Label value="First name" />
+          <Label htmlFor="FirstName" value="First name" />
         </div>
         <TextInput
           id="FirstName"
@@ -73,7 +80,7 @@ export default function SignUp() {
       </div>
       <div>
         <div className="mb-2 block">
-          <Label value="Last name" />
+          <Label htmlFor="LastName" value="Last name" />
         </div>
         <TextInput
           id="LastName"
@@ -107,9 +114,18 @@ export default function SignUp() {
           required
           shadow
           type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)} // ✅ était non contrôlé
         />
       </div>
-      <Button type="submit" color="failure">Register new account</Button>
+
+      {errorMessage && (
+        <p className="text-red-500 text-sm">{errorMessage}</p>
+      )}
+
+      <Button type="submit" color="failure">
+        Register new account
+      </Button>
     </form>
   );
 }
