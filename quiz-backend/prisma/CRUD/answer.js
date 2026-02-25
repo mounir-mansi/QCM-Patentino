@@ -1,8 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-// Créer une nouvelle réponse pour une question
 async function createAnswer(questionId, data) {
   try {
     return await prisma.answer.create({
@@ -19,7 +18,6 @@ async function createAnswer(questionId, data) {
   }
 }
 
-// Mettre à jour une réponse
 async function updateAnswer(answerId, data) {
   try {
     return await prisma.answer.update({ where: { id: answerId }, data });
@@ -31,7 +29,6 @@ async function updateAnswer(answerId, data) {
   }
 }
 
-// Supprimer une réponse
 async function deleteAnswer(answerId) {
   try {
     return await prisma.answer.delete({ where: { id: answerId } });
@@ -43,7 +40,6 @@ async function deleteAnswer(answerId) {
   }
 }
 
-// Récupérer toutes les réponses d'une question
 async function getAnswersByQuestionId(questionId) {
   try {
     return await prisma.answer.findMany({
@@ -57,7 +53,6 @@ async function getAnswersByQuestionId(questionId) {
   }
 }
 
-//Voir si la réponse envoyée est la bonne
 async function getSelectedAnswer(selectedAnswerId) {
   try {
     return await prisma.answer.findFirst({
@@ -71,7 +66,7 @@ async function getSelectedAnswer(selectedAnswerId) {
   }
 }
 
-module.exports = {
+export default {
   createAnswer,
   updateAnswer,
   deleteAnswer,

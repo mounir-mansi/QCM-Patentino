@@ -1,3 +1,15 @@
+import express from "express";
+import { PrismaClient } from "@prisma/client";
+
+import "dotenv/config";
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 const moduleRouter = express.Router();
 
 moduleRouter.get("/", async (req, res) => {
@@ -7,13 +19,11 @@ moduleRouter.get("/", async (req, res) => {
 moduleRouter.get("/:id", async (req, res) => {
   try {
     const moduleId = req.params.id;
-
     const module = await prisma.module.findFirst({
       where: {
         id: parseInt(moduleId),
       },
     });
-
     res.json(module);
   } catch (error) {
     console.error(error);
@@ -23,4 +33,4 @@ moduleRouter.get("/:id", async (req, res) => {
   }
 });
 
-module.exports = moduleRouter;
+export default moduleRouter;

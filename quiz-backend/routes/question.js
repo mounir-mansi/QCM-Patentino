@@ -1,11 +1,19 @@
-const express = require("express");
-const questionRouter = express.Router();
-const modelQuestion = require("../prisma/CRUD/question");
-const authenticate = require("../middleware/authenticateToken");
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+import express from "express";
+import modelQuestion from "../prisma/CRUD/question.js";
+import authenticate from "../middleware/authenticateToken.js";
+import { PrismaClient } from "@prisma/client";
 
-// Créer une question
+import "dotenv/config";
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
+const questionRouter = express.Router();
+
 questionRouter.post("/", async (req, res) => {
   try {
     const { question_title, question_level, question_duration, module_id } =
@@ -90,4 +98,4 @@ questionRouter.get("/random-50", authenticate, async (req, res) => {
   }
 });
 
-module.exports = questionRouter;
+export default questionRouter;

@@ -1,8 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-// Créer une nouvelle question
 async function createQuestion(moduleId, data) {
   try {
     return await prisma.question.create({
@@ -19,7 +18,6 @@ async function createQuestion(moduleId, data) {
   }
 }
 
-// Obtenir une question par ID
 async function getQuestionById(questionId) {
   try {
     return await prisma.question.findUnique({ where: { id: questionId } });
@@ -31,7 +29,6 @@ async function getQuestionById(questionId) {
   }
 }
 
-// Mettre à jour une question
 async function updateQuestion(questionId, data) {
   try {
     return await prisma.question.update({ where: { id: questionId }, data });
@@ -43,7 +40,6 @@ async function updateQuestion(questionId, data) {
   }
 }
 
-// Supprimer une question
 async function deleteQuestion(questionId) {
   try {
     return await prisma.question.delete({ where: { id: questionId } });
@@ -55,17 +51,14 @@ async function deleteQuestion(questionId) {
   }
 }
 
-// Récupérer un ensemble de questions selon le module et le niveau
 async function getQuestionsByModuleAndLevel(moduleTitle, questionLevel) {
   try {
     const module = await prisma.module.findUnique({
       where: { module_title: moduleTitle },
     });
-
     if (!module) {
       throw new Error("Module not found");
     }
-
     return await prisma.question.findMany({
       where: { question_level: questionLevel, module_id: module.id },
     });
@@ -77,7 +70,7 @@ async function getQuestionsByModuleAndLevel(moduleTitle, questionLevel) {
   }
 }
 
-module.exports = {
+export default {
   createQuestion,
   getQuestionById,
   updateQuestion,

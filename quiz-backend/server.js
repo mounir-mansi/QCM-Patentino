@@ -1,14 +1,12 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const userRouter = require("./routes/user");
-const questionRouter = require("./routes/question");
-const answerRouter = require("./routes/answer");
-const achievementRouter = require("./routes/achievment");
-const quizSessionRouter = require("./routes/quizSession");
+import express from "express";
+import bodyParser from "body-parser";
+import userRouter from "./routes/user.js";
+import questionRouter from "./routes/question.js";
+import answerRouter from "./routes/answer.js";
+import achievementRouter from "./routes/achievment.js";
+import quizSessionRouter from "./routes/quizSession.js";
 
-// Créer une instance du routeur Express
 const app = express();
-
 app.use(bodyParser.json());
 app.use("/users", userRouter);
 app.use("/question", questionRouter);
@@ -16,7 +14,6 @@ app.use("/answer", answerRouter);
 app.use("/achievment", achievementRouter);
 app.use("/quiz-session", quizSessionRouter);
 
-// Configuration de l'application Express
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -27,13 +24,11 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
     return res.status(200).json({});
   }
-
   next();
 });
 
 app.set("port", process.env.PORT || 5500);
 
-// Démarrer le serveur
 app.listen(app.get("port"), () => {
   console.log(
     `Le serveur est en cours d'exécution sur le port ${app.get("port")}`,

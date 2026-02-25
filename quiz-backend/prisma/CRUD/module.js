@@ -1,8 +1,7 @@
-const { PrismaClient } = require("@prisma/client");
+import "dotenv/config";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-// Créer un nouveau module
 async function createModule(data) {
   try {
     return await prisma.module.create({ data });
@@ -14,7 +13,6 @@ async function createModule(data) {
   }
 }
 
-// Obtenir un module par ID
 async function getModuleById(moduleId) {
   try {
     return await prisma.module.findUnique({ where: { id: moduleId } });
@@ -26,7 +24,6 @@ async function getModuleById(moduleId) {
   }
 }
 
-// Mettre à jour un module
 async function updateModule(moduleId, data) {
   try {
     return await prisma.module.update({ where: { id: moduleId }, data });
@@ -38,7 +35,6 @@ async function updateModule(moduleId, data) {
   }
 }
 
-// Supprimer un module
 async function deleteModule(moduleId) {
   try {
     return await prisma.module.delete({ where: { id: moduleId } });
@@ -50,7 +46,7 @@ async function deleteModule(moduleId) {
   }
 }
 
-module.exports = {
+export default {
   createModule,
   getModuleById,
   updateModule,

@@ -1,5 +1,5 @@
-const modelAnswer = require("../prisma/CRUD/answer");
-const express = require("express");
+import express from "express";
+import modelAnswer from "../prisma/CRUD/answer.js";
 
 const answerRouter = express.Router();
 
@@ -10,7 +10,6 @@ answerRouter.post("/", async (req, res) => {
       questionId: questionId,
       selectedOption: selectedOption,
     });
-
     res.json(answer);
   } catch (error) {
     console.error(error);
@@ -48,4 +47,4 @@ answerRouter.get("/:id", async (req, res) => {
   }
 });
 
-module.exports = answerRouter;
+export default answerRouter;
