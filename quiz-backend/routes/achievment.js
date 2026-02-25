@@ -1,8 +1,8 @@
-const express = require("express");
-const achievementRouter = express.Router();
-const achievementModel = require("../prisma/CRUD/achievment");
+import express from "express";
+import achievementModel from "../prisma/CRUD/achievment.js";
 
-// Créer une nouvelle réalisation (achievement)
+const achievementRouter = express.Router();
+
 achievementRouter.post("/", async (req, res) => {
   try {
     const { moduleId, userId, finalScore, levelModule, success } = req.body;
@@ -12,7 +12,7 @@ achievementRouter.post("/", async (req, res) => {
       userId,
       finalScore,
       levelModule,
-      success
+      success,
     );
     res.json(achievement);
   } catch (error) {
@@ -23,13 +23,11 @@ achievementRouter.post("/", async (req, res) => {
   }
 });
 
-// Obtenir une réalisation (achievement) par ID
 achievementRouter.get("/:id", async (req, res) => {
   try {
     const achievementId = req.params.id;
-    const achievement = await achievementModel.getAchievementById(
-      achievementId
-    );
+    const achievement =
+      await achievementModel.getAchievementById(achievementId);
     res.json(achievement);
   } catch (error) {
     console.error(error);
@@ -39,14 +37,13 @@ achievementRouter.get("/:id", async (req, res) => {
   }
 });
 
-// Mettre à jour une réalisation (achievement)
 achievementRouter.put("/:id", async (req, res) => {
   try {
     const achievementId = req.params.id;
     const data = req.body;
     const updatedAchievement = await achievementModel.updateAchievement(
       achievementId,
-      data
+      data,
     );
     res.json(updatedAchievement);
   } catch (error) {
@@ -57,7 +54,6 @@ achievementRouter.put("/:id", async (req, res) => {
   }
 });
 
-// Supprimer une réalisation (achievement)
 achievementRouter.delete("/:id", async (req, res) => {
   try {
     const achievementId = req.params.id;
@@ -71,7 +67,6 @@ achievementRouter.delete("/:id", async (req, res) => {
   }
 });
 
-// Récupérer toutes les réalisations (achievements) d'un utilisateur
 achievementRouter.get("/user/:userId", async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
@@ -86,4 +81,4 @@ achievementRouter.get("/user/:userId", async (req, res) => {
   }
 });
 
-module.exports = achievementRouter;
+export default achievementRouter;

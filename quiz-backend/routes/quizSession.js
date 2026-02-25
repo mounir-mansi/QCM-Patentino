@@ -1,27 +1,29 @@
-const express = require("express");
-const { PrismaClient } = require("@prisma/client");
+import express from "express";
+import { PrismaClient } from "@prisma/client";
 
+import "dotenv/config";
+
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+});
 const router = express.Router();
-const prisma = new PrismaClient();
-
-// POST /quiz-session/start
 router.post("/start", async (req, res) => {
   try {
     const { userId } = req.body;
-
     if (!userId) {
       return res.status(400).json({ error: "userId requis" });
     }
 
-    // 1️⃣ Sélection aléatoire de 50 questions (MySQL → RAND())
     const questions = await prisma.$queryRawUnsafe(`
       SELECT * FROM Question ORDER BY RAND() LIMIT 50;
     `);
 
-    // 2️⃣ Extraire les IDs des questions
     const questionIds = questions.map((q) => q.id);
 
-    // 3️⃣ Créer la session
     const session = await prisma.quizSession.create({
       data: {
         user_id: userId,
@@ -32,7 +34,6 @@ router.post("/start", async (req, res) => {
       },
     });
 
-    // 4️⃣ Retourner la session + les questions tirées
     res.status(201).json({
       sessionId: session.id,
       questions,
@@ -43,4 +44,4 @@ router.post("/start", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
