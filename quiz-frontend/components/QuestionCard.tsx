@@ -107,20 +107,11 @@
 // ajout surlignage
 
 import React, { useEffect, useState } from "react";
-import Timer from "./Timer";
-import { Button } from 'flowbite-react';
+import { Answer, Question } from "./types"; // si tu les as mis dans un fichier séparé
 import AnswerButton from "./AnswerButton";
+import Timer from "./Timer";
+import { Button } from "flowbite-react";
 
-type Answer = {
-  id: number;
-  title_answer: string;
-  result_answer: boolean; // ajouté pour savoir si c'est la bonne réponse
-};
-
-type Question = {
-  id: number;
-  question_title: string;
-};
 
 type QuestionCardProps = {
   currentQuestionIndex: number;
@@ -130,13 +121,17 @@ type QuestionCardProps = {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, questions, onSubmit }) => {
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [selectedAnswer, setSelectedAnswer] = useState<number>(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [validated, setValidated] = useState<boolean>(false);
   const [timerReset, setTimerReset] = useState<boolean>(false);
 
   useEffect(() => {
-    getAnswers(questions[currentQuestionIndex].id).then((values) => setAnswers(values));
-    setSelectedAnswer(0);
+    const loadAnswers = async () => {
+      const values = await getAnswers(questions[currentQuestionIndex].id);
+      setAnswers(Array.isArray(values) ? values : []);
+    };
+    loadAnswers();
+    setSelectedAnswer(null);
     setValidated(false);
     setTimerReset(false);
   }, [questions, currentQuestionIndex]);
@@ -191,15 +186,16 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
         <ul className="text-center my-10">
           <li className="my-5 text-2xl text-black">{questions[currentQuestionIndex].question_title}</li>
           <div className="flex flex-col items-center">
-            {answers.map((answer) => (
-              <AnswerButton
-                key={answer.id}
-                answer={answer}
-                isClicked={selectedAnswer === answer.id}
-                validated={validated} // <-- important
-                onClick={handleAnswerClick}
-              />
-            ))}
+            {answers.map((answer: Answer) => (
+            <AnswerButton
+              key={answer.id}
+              answer={answer}
+              isClicked={selectedAnswer === answer.id}
+              validated={validated}
+              onClick={setSelectedAnswer}
+            />
+          ))}
+
           </div>
         </ul>
       </div>
@@ -218,7 +214,7 @@ const getAnswers = async (questionId: number): Promise<Answer[]> => {
     const url = `/api/answer/question/${questionId}`;
     const response = await fetch(url, { method: "GET", headers: { "Content-Type": "application/json" } });
     const answersData = await response.json();
-    return answersData;
+    return Array.isArray(answersData) ? answersData : [];
   } catch (error) {
     console.error(error);
     return [];

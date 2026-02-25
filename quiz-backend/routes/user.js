@@ -1,4 +1,4 @@
-const modelUser = require("../prisma/CRUD/user");
+const modelUser = require("../prisma/CRUD/user.cjs");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const userRouter = express.Router();
@@ -7,7 +7,8 @@ userRouter.get("/", async (req, res) => {
   // res.status(200).json({ msg: "success" });
   try {
     // Récupérer tous les utilisateurs depuis la base de données avec Prisma
-    const users = await prisma.user.findMany();
+    // const users = await prisma.user.findMany();
+    const users = await modelUser.getAllUsers();
 
     // Envoyer la liste des utilisateurs en tant que réponse JSON
     res.json(users);

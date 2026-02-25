@@ -19,9 +19,10 @@
 const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
+  console.log("Middleware authenticateToken déclenché");
   try {
     const authHeader = req.headers.authorization;
-
+    console.log(authHeader); // undefined
     // Vérification si le header existe
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "Token inexistant ou invalide" });
@@ -35,7 +36,8 @@ const authenticate = (req, res, next) => {
 
     // Ajouter infos utilisateur à la requête
     req.userData = { userId: decodedToken.id, email: decodedToken.email };
-
+    console.log(req.userData); // <-- c'est ici que tu aurais dû voir les infos
+    console.log(req.user); // => undefined, si tu logues req.user, c’est normal
     next();
   } catch (error) {
     console.error("Erreur auth:", error);
