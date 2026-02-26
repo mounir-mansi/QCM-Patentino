@@ -5,6 +5,7 @@ import questionRouter from "./routes/question.js";
 import answerRouter from "./routes/answer.js";
 import achievementRouter from "./routes/achievment.js";
 import quizSessionRouter from "./routes/quizSession.js";
+import moduleRouter from "./routes/module.js";
 
 const app = express();
 app.use(bodyParser.json());
@@ -13,6 +14,7 @@ app.use("/question", questionRouter);
 app.use("/answer", answerRouter);
 app.use("/achievment", achievementRouter);
 app.use("/quiz-session", quizSessionRouter);
+app.use("/module", moduleRouter);
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
