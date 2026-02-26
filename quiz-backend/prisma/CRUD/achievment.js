@@ -1,7 +1,7 @@
-import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
 async function createAchievement(moduleId, userId, score, level, success) {
   try {
     return await prisma.achievment.create({
@@ -27,8 +27,6 @@ async function getAchievementById(achievementId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -41,8 +39,6 @@ async function updateAchievement(achievementId, data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -52,8 +48,6 @@ async function deleteAchievement(achievementId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -66,8 +60,6 @@ async function getAchievementsByUserId(userId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 

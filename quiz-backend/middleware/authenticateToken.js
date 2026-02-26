@@ -1,3 +1,4 @@
+import "dotenv/config";
 import jwt from "jsonwebtoken";
 
 const authenticate = (req, res, next) => {
@@ -9,10 +10,9 @@ const authenticate = (req, res, next) => {
       return res.status(401).json({ message: "Token inexistant ou invalide" });
     }
     const token = authHeader.split(" ")[1];
-    const decodedToken = jwt.verify(token, "your-secret-key");
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     req.userData = { userId: decodedToken.id, email: decodedToken.email };
     console.log(req.userData);
-    console.log(req.user);
     next();
   } catch (error) {
     console.error("Erreur auth:", error);

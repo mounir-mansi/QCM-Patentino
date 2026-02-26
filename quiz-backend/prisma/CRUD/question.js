@@ -1,7 +1,7 @@
-import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
 async function createQuestion(moduleId, data) {
   try {
     return await prisma.question.create({
@@ -13,8 +13,6 @@ async function createQuestion(moduleId, data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -24,8 +22,6 @@ async function getQuestionById(questionId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -35,8 +31,6 @@ async function updateQuestion(questionId, data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -46,8 +40,6 @@ async function deleteQuestion(questionId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -65,8 +57,6 @@ async function getQuestionsByModuleAndLevel(moduleTitle, questionLevel) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
