@@ -17,8 +17,6 @@ async function createModule(data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -28,8 +26,6 @@ async function getModuleById(moduleId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -39,8 +35,6 @@ async function updateModule(moduleId, data) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -50,8 +44,6 @@ async function deleteModule(moduleId) {
   } catch (error) {
     console.error(error);
     throw error;
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
