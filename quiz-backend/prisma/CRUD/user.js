@@ -1,10 +1,15 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
+import argon2 from "argon2";
 
 const prisma = new PrismaClient();
+
 async function createUser(data) {
   try {
-    return await prisma.user.create({ data });
+    const hashedPassword = await argon2.hash(data.password);
+    return await prisma.user.create({
+      data: { ...data, password: hashedPassword },
+    });
   } catch (error) {
     console.error(error);
     throw error;
@@ -26,7 +31,7 @@ async function comparePasswords(email, password) {
     if (!user) {
       throw new Error("Utilisateur introuvable");
     }
-    return user.password === password;
+    return await argon2.verify(user.password, password);
   } catch (error) {
     console.error("Erreur lors de la comparaison des mots de passe :", error);
     throw error;
@@ -44,6 +49,9 @@ async function getUserById(userId) {
 
 async function updateUser(userId, data) {
   try {
+    if (data.password) {
+      data.password = await argon2.hash(data.password);
+    }
     return await prisma.user.update({ where: { id: userId }, data });
   } catch (error) {
     console.error(error);

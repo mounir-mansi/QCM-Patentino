@@ -12,6 +12,7 @@
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.4.1",
     "@prisma/driver-adapter-utils": "^7.4.1",
+    "argon2": "^0.44.0",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.0",
