@@ -1,7 +1,16 @@
-import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+async function getAllModules() {
+  try {
+    return await prisma.module.findMany();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 async function createModule(data) {
   try {
     return await prisma.module.create({ data });
@@ -47,6 +56,7 @@ async function deleteModule(moduleId) {
 }
 
 export default {
+  getAllModules,
   createModule,
   getModuleById,
   updateModule,
