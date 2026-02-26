@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import jwt from "jsonwebtoken";
 import modelUser from "../prisma/CRUD/user.js";
@@ -43,7 +44,7 @@ userRouter.post("/login", async (req, res) => {
 
     function generateToken(user) {
       const payload = { id: user.id, email: user.email };
-      return jwt.sign(payload, "your-secret-key", { expiresIn: "1h" });
+      return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
     }
 
     if (compare === true) {
