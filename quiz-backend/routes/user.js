@@ -40,9 +40,12 @@ userRouter.post("/signup", async (req, res) => {
         .status(400)
         .json({ errors: validated.error.flatten().fieldErrors });
     }
+    const existingUser = await modelUser.findUserByEmail(validated.data.email);
+    if (existingUser) {
+      return res.status(409).json({ message: "Cet email est déjà utilisé." });
+    }
     const user = await modelUser.createUser(validated.data);
-    console.log(user);
-    res.json(user);
+    res.status(201).json(user);
   } catch (error) {
     console.error(error);
     res
@@ -92,13 +95,19 @@ userRouter.post("/login", async (req, res) => {
 userRouter.get("/:id", async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     const user = await modelUser.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur introuvable." });
+    }
     res.json(user);
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Erreur lors de la récupération des utilisateurs." });
+      .json({ message: "Erreur lors de la récupération de l'utilisateur." });
   }
 });
 

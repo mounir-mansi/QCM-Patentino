@@ -29,7 +29,7 @@ achievementRouter.post("/", async (req, res) => {
       levelModule,
       success,
     );
-    res.json(achievement);
+    res.status(201).json(achievement);
   } catch (error) {
     console.error(error);
     res
@@ -41,8 +41,14 @@ achievementRouter.post("/", async (req, res) => {
 achievementRouter.get("/:id", async (req, res) => {
   try {
     const achievementId = parseInt(req.params.id);
+    if (isNaN(achievementId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     const achievement =
       await achievementModel.getAchievementById(achievementId);
+    if (!achievement) {
+      return res.status(404).json({ message: "Réalisation introuvable." });
+    }
     res.json(achievement);
   } catch (error) {
     console.error(error);
@@ -55,11 +61,17 @@ achievementRouter.get("/:id", async (req, res) => {
 achievementRouter.put("/:id", async (req, res) => {
   try {
     const achievementId = parseInt(req.params.id);
+    if (isNaN(achievementId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     const data = req.body;
     const updatedAchievement = await achievementModel.updateAchievement(
       achievementId,
       data,
     );
+    if (!updatedAchievement) {
+      return res.status(404).json({ message: "Réalisation introuvable." });
+    }
     res.json(updatedAchievement);
   } catch (error) {
     console.error(error);
@@ -72,8 +84,11 @@ achievementRouter.put("/:id", async (req, res) => {
 achievementRouter.delete("/:id", async (req, res) => {
   try {
     const achievementId = parseInt(req.params.id);
+    if (isNaN(achievementId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     await achievementModel.deleteAchievement(achievementId);
-    res.json({ message: "Réalisation supprimée avec succès." });
+    res.status(200).json({ message: "Réalisation supprimée avec succès." });
   } catch (error) {
     console.error(error);
     res
@@ -85,6 +100,9 @@ achievementRouter.delete("/:id", async (req, res) => {
 achievementRouter.get("/user/:userId", async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
+    if (isNaN(userId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     const achievements = await achievementModel.getAchievementsByUserId(userId);
     res.json(achievements);
   } catch (error) {

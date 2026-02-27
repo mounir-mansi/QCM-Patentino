@@ -31,8 +31,7 @@ questionRouter.post("/", async (req, res) => {
         .json({ errors: validated.error.flatten().fieldErrors });
     }
     const question = await modelQuestion.createQuestion(validated.data);
-    console.log("Question créée:", question);
-    res.json(question);
+    res.status(201).json(question);
   } catch (error) {
     console.error(error);
     res
