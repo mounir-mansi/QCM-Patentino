@@ -1,15 +1,6 @@
 import express from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma/client.js";
 
-import "dotenv/config";
-
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
 const router = express.Router();
 router.post("/start", async (req, res) => {
   try {

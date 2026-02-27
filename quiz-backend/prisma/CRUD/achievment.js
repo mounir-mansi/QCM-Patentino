@@ -1,6 +1,4 @@
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import prisma from "../client.js";
 
 async function createAchievement(moduleId, userId, score, level, success) {
   try {

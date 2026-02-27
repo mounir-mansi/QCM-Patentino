@@ -1,8 +1,6 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../client.js";
 import argon2 from "argon2";
-
-const prisma = new PrismaClient();
 
 async function createUser(data) {
   try {
