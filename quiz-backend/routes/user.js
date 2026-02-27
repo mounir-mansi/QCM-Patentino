@@ -1,9 +1,24 @@
 import "dotenv/config";
 import express from "express";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 import modelUser from "../prisma/CRUD/user.js";
 
 const userRouter = express.Router();
+
+const signupSchema = z.object({
+  firstname: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
+  lastname: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.string().email("Email invalide"),
+  password: z
+    .string()
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+});
+
+const loginSchema = z.object({
+  email: z.string().email("Email invalide"),
+  password: z.string().min(1, "Mot de passe requis"),
+});
 
 userRouter.get("/", async (req, res) => {
   try {
@@ -19,13 +34,13 @@ userRouter.get("/", async (req, res) => {
 
 userRouter.post("/signup", async (req, res) => {
   try {
-    const { firstname, lastname, email, password } = req.body;
-    const user = await modelUser.createUser({
-      firstname,
-      lastname,
-      email,
-      password,
-    });
+    const validated = signupSchema.safeParse(req.body);
+    if (!validated.success) {
+      return res
+        .status(400)
+        .json({ errors: validated.error.flatten().fieldErrors });
+    }
+    const user = await modelUser.createUser(validated.data);
     console.log(user);
     res.json(user);
   } catch (error) {
@@ -38,8 +53,13 @@ userRouter.post("/signup", async (req, res) => {
 
 userRouter.post("/login", async (req, res) => {
   try {
-    const { password, email } = req.body;
-
+    const validated = loginSchema.safeParse(req.body);
+    if (!validated.success) {
+      return res
+        .status(400)
+        .json({ errors: validated.error.flatten().fieldErrors });
+    }
+    const { email, password } = validated.data;
     const compare = await modelUser.comparePasswords(email, password);
 
     function generateToken(user) {
@@ -62,7 +82,7 @@ userRouter.post("/login", async (req, res) => {
         res.status(404).json({ message: "Utilisateur introuvable" });
       }
     } else {
-      res.status(500).json({ message: "Email ou mot de passe incorrect" });
+      res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
   } catch (error) {
     res.status(500).json({ message: "Erreur de login.", error });

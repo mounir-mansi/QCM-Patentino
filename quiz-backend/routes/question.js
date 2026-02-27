@@ -1,20 +1,36 @@
 import express from "express";
+import { z } from "zod";
 import modelQuestion from "../prisma/CRUD/question.js";
 import authenticate from "../middleware/authenticateToken.js";
 import prisma from "../prisma/client.js";
 
 const questionRouter = express.Router();
 
+const questionSchema = z.object({
+  question_title: z.string().min(1, "Titre requis"),
+  question_level: z.enum(["facile", "intermediaire", "difficile"], {
+    errorMap: () => ({ message: "Niveau invalide" }),
+  }),
+  question_duration: z.number().int().positive("Durée invalide"),
+  module_id: z.number().int().positive("module_id invalide"),
+});
+
+const randomSchema = z.object({
+  module: z.string().min(1, "module requis"),
+  level: z.enum(["facile", "intermediaire", "difficile"], {
+    errorMap: () => ({ message: "Niveau invalide" }),
+  }),
+});
+
 questionRouter.post("/", async (req, res) => {
   try {
-    const { question_title, question_level, question_duration, module_id } =
-      req.body;
-    const question = await modelQuestion.createQuestion({
-      question_title,
-      question_level,
-      question_duration,
-      module_id,
-    });
+    const validated = questionSchema.safeParse(req.body);
+    if (!validated.success) {
+      return res
+        .status(400)
+        .json({ errors: validated.error.flatten().fieldErrors });
+    }
+    const question = await modelQuestion.createQuestion(validated.data);
     console.log("Question créée:", question);
     res.json(question);
   } catch (error) {
@@ -27,7 +43,13 @@ questionRouter.post("/", async (req, res) => {
 
 questionRouter.get("/random-50", authenticate, async (req, res) => {
   try {
-    const { module, level } = req.query;
+    const validated = randomSchema.safeParse(req.query);
+    if (!validated.success) {
+      return res
+        .status(400)
+        .json({ errors: validated.error.flatten().fieldErrors });
+    }
+    const { module, level } = validated.data;
     const userId = req.userData?.userId;
 
     if (!userId) {
