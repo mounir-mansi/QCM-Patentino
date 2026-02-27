@@ -4,15 +4,10 @@ import Logo from "../public/assets/logo_Quizine.png"
 import Image from 'next/image'
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-// import { useRouter } from "next/router";
+import useAutoLogout from "@/hooks/useAutoLogout";
 
 export default function Menu() {
-
-  // const router = useRouter()
-
-  // const goToLogIn = () => {
-  //   router.push('/pages/logIn')
-  // }
+  useAutoLogout();
 const { push } = useRouter();
  const [email, setEmail]= useState("");
  const [name, setName]= useState("");
