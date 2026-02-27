@@ -22,7 +22,7 @@ answerRouter.post("/", async (req, res) => {
       questionId,
       selectedOption,
     });
-    res.json(answer);
+    res.status(201).json(answer);
   } catch (error) {
     console.error(error);
     res
@@ -34,7 +34,13 @@ answerRouter.post("/", async (req, res) => {
 answerRouter.get("/question/:id", async (req, res) => {
   try {
     const questionId = parseInt(req.params.id);
+    if (isNaN(questionId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     const answers = await modelAnswer.getAnswersByQuestionId(questionId);
+    if (!answers || answers.length === 0) {
+      return res.status(404).json({ message: "Aucune réponse trouvée." });
+    }
     res.json(answers);
   } catch (error) {
     console.error(error);
@@ -47,7 +53,13 @@ answerRouter.get("/question/:id", async (req, res) => {
 answerRouter.get("/:id", async (req, res) => {
   try {
     const answerId = parseInt(req.params.id);
+    if (isNaN(answerId)) {
+      return res.status(400).json({ message: "ID invalide." });
+    }
     const answer = await modelAnswer.getSelectedAnswer(answerId);
+    if (!answer) {
+      return res.status(404).json({ message: "Réponse introuvable." });
+    }
     res.json(answer);
   } catch (error) {
     console.error(error);
