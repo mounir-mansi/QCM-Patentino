@@ -1,6 +1,7 @@
 import express from "express";
 import { z } from "zod";
 import achievementModel from "../prisma/CRUD/achievment.js";
+import authenticate from "../middleware/authenticateToken.js";
 
 const achievementRouter = express.Router();
 
@@ -12,7 +13,7 @@ const achievementSchema = z.object({
   success: z.boolean({ required_error: "success requis" }),
 });
 
-achievementRouter.post("/", async (req, res) => {
+achievementRouter.post("/", authenticate, async (req, res) => {
   try {
     const validated = achievementSchema.safeParse(req.body);
     if (!validated.success) {
@@ -38,7 +39,7 @@ achievementRouter.post("/", async (req, res) => {
   }
 });
 
-achievementRouter.get("/:id", async (req, res) => {
+achievementRouter.get("/:id", authenticate, async (req, res) => {
   try {
     const achievementId = parseInt(req.params.id);
     if (isNaN(achievementId)) {
@@ -58,7 +59,7 @@ achievementRouter.get("/:id", async (req, res) => {
   }
 });
 
-achievementRouter.put("/:id", async (req, res) => {
+achievementRouter.put("/:id", authenticate, async (req, res) => {
   try {
     const achievementId = parseInt(req.params.id);
     if (isNaN(achievementId)) {
@@ -81,7 +82,7 @@ achievementRouter.put("/:id", async (req, res) => {
   }
 });
 
-achievementRouter.delete("/:id", async (req, res) => {
+achievementRouter.delete("/:id", authenticate, async (req, res) => {
   try {
     const achievementId = parseInt(req.params.id);
     if (isNaN(achievementId)) {
@@ -97,7 +98,7 @@ achievementRouter.delete("/:id", async (req, res) => {
   }
 });
 
-achievementRouter.get("/user/:userId", async (req, res) => {
+achievementRouter.get("/user/:userId", authenticate, async (req, res) => {
   try {
     const userId = parseInt(req.params.userId);
     if (isNaN(userId)) {

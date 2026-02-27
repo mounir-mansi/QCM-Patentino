@@ -1,6 +1,7 @@
 import express from "express";
 import { z } from "zod";
 import prisma from "../prisma/client.js";
+import authenticate from "../middleware/authenticateToken.js";
 
 const router = express.Router();
 
@@ -8,7 +9,7 @@ const startSchema = z.object({
   userId: z.number().int().positive("userId invalide"),
 });
 
-router.post("/start", async (req, res) => {
+router.post("/start", authenticate, async (req, res) => {
   try {
     const validated = startSchema.safeParse(req.body);
     if (!validated.success) {
