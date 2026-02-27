@@ -1,13 +1,22 @@
 import express from "express";
+import { z } from "zod";
 import prisma from "../prisma/client.js";
 
 const router = express.Router();
+
+const startSchema = z.object({
+  userId: z.number().int().positive("userId invalide"),
+});
+
 router.post("/start", async (req, res) => {
   try {
-    const { userId } = req.body;
-    if (!userId) {
-      return res.status(400).json({ error: "userId requis" });
+    const validated = startSchema.safeParse(req.body);
+    if (!validated.success) {
+      return res
+        .status(400)
+        .json({ errors: validated.error.flatten().fieldErrors });
     }
+    const { userId } = validated.data;
 
     const questions = await prisma.$queryRawUnsafe(`
       SELECT * FROM Question ORDER BY RAND() LIMIT 50;
