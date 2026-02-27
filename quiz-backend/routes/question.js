@@ -1,17 +1,8 @@
 import express from "express";
 import modelQuestion from "../prisma/CRUD/question.js";
 import authenticate from "../middleware/authenticateToken.js";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../prisma/client.js";
 
-import "dotenv/config";
-
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-});
 const questionRouter = express.Router();
 
 questionRouter.post("/", async (req, res) => {
