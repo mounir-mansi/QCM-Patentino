@@ -14,7 +14,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [validated, setValidated] = useState<boolean>(false);
-  const [timerReset, setTimerReset] = useState<boolean>(false);
 
   useEffect(() => {
     const loadAnswers = async () => {
@@ -24,7 +23,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
     loadAnswers();
     setSelectedAnswer(null);
     setValidated(false);
-    setTimerReset(false);
   }, [questions, currentQuestionIndex]);
 
   const handleAnswerClick = (answerId: number) => {
@@ -44,8 +42,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
   const handleTerminated = () => {
     setValidated(true);
     setTimeout(() => {
-      onSubmit(selectedAnswer); // null si aucune réponse sélectionnée
-      setTimerReset(true);
+      onSubmit(selectedAnswer);
       setValidated(false);
       setSelectedAnswer(null);
     }, 1000);
@@ -57,12 +54,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
         <div className="text-center">
           <div className="mx-3 my-3 rounded-3xl w-full">
             <div className="text-black text-2xl">
-              <Timer onTerminated={handleTerminated} timerReset={timerReset} />
+              <Timer onTerminated={handleTerminated} questionId={questions[currentQuestionIndex].id} />
             </div>
           </div>
         </div>
       </div>
-
       <div className="container -mb-10 h-full p-3">
         <div className="text-center">
           <button className="bg-gray-dark mx-3 rounded-full lg:w-[40%] cursor-default shadow sm:w-[50%]">
@@ -72,7 +68,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
           </button>
         </div>
       </div>
-
       <div className="container bg-white h-full p-3 rounded-md shadow-md">
         <ul className="text-center my-10">
           <li className="my-5 text-2xl text-black">{questions[currentQuestionIndex].question_title}</li>
@@ -89,7 +84,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
           </div>
         </ul>
       </div>
-
       <div className="container h-full p-3 flex justify-center items-center">
         <Button color="success" pill className="shadow-md my-3 w-[70%]" onClick={handleValidateClick}>
           Valider

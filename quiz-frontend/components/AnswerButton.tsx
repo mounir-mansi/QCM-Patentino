@@ -1,34 +1,3 @@
-// import React from 'react';
-// import { Button } from 'flowbite-react';
-
-// type AnswerButtonProps = {
-//     onClick: (answerId:number) => void;
-//     isClicked: boolean; 
-//     answer: {id:number, title_answer:string}// Remplacez le type 'string[]' par le type approprié pour vos questions
-//   };
-
-// const AnswerButton :React.FC<AnswerButtonProps>= ({onClick, isClicked, answer}) => {
-
-//   const handleClick = () => {
-//     onClick(answer.id)
-//   };
-
-//   return (
-//     <Button 
-//       className={`w-[80%] my-2 ${isClicked ? 'clicked' : ''}`}
-//       color="failure"
-//       pill
-//       outline={!isClicked}
-//       onClick={handleClick}
-//     >
-//       {answer.title_answer}
-//     </Button>
-//   );
-// }
-
-// export default AnswerButton
-
-//Ajout surlignage
 import React from 'react';
 import { Button } from 'flowbite-react';
 
@@ -36,8 +5,7 @@ type AnswerButtonProps = {
   onClick: (answerId:number) => void;
   isClicked: boolean; 
   validated?: boolean;
-  answer: {id:number, title_answer:string, result_answer:boolean};
-};
+answer: {id:number, title_answer:string, result_answer?: boolean};};
 
 const AnswerButton :React.FC<AnswerButtonProps>= ({onClick, isClicked, validated, answer}) => {
 
@@ -48,8 +16,7 @@ const AnswerButton :React.FC<AnswerButtonProps>= ({onClick, isClicked, validated
 
   if (validated) {
     // Après validation
-    if (answer.result_answer) color = "success"; // bonne réponse
-    else if (isClicked) color = "failure"; // mauvaise réponse choisie
+if (answer.result_answer === true) color = "success";    else if (isClicked) color = "failure"; // mauvaise réponse choisie
     else color = "gray"; // les autres
     outline = false; // jamais d'outline après validation
   } else {
