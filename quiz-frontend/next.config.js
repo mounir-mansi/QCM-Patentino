@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    domains: [
+      "res.cloudinary.com",
+      "www.audit-conseil-formation.com",
+      "kinsta.com",
+      "www.sportbuzzbusiness.fr",
+    ],
+  },
   async rewrites() {
     return [
       {
@@ -9,5 +17,4 @@ const nextConfig = {
     ];
   },
 };
-
 module.exports = nextConfig;

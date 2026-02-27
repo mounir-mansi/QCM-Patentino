@@ -1,5 +1,6 @@
 'use client';
 import { Button } from "flowbite-react";
+import Image from "next/image";
 
 interface ModuleCardProps {
   module: string;
@@ -11,11 +12,12 @@ export default function ModuleCard(props: ModuleCardProps) {
   return (
     <div className="w-80">
       <div className="flex flex-col h-full rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
-        <div className="h-48 overflow-hidden">
-          <img
-            src={props.image}
+        <div className="h-48 overflow-hidden relative">
+          <Image
+            src={props.image ?? ""}
             alt={props.module}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         </div>
         <div className="flex flex-col flex-1 p-5 gap-3">
