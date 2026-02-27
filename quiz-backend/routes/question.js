@@ -22,7 +22,7 @@ const randomSchema = z.object({
   }),
 });
 
-questionRouter.post("/", async (req, res) => {
+questionRouter.post("/", authenticate, async (req, res) => {
   try {
     const validated = questionSchema.safeParse(req.body);
     if (!validated.success) {

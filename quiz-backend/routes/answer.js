@@ -1,6 +1,7 @@
 import express from "express";
 import { z } from "zod";
 import modelAnswer from "../prisma/CRUD/answer.js";
+import authenticate from "../middleware/authenticateToken.js";
 
 const answerRouter = express.Router();
 
@@ -9,7 +10,7 @@ const answerSchema = z.object({
   selectedOption: z.string().min(1, "selectedOption requis"),
 });
 
-answerRouter.post("/", async (req, res) => {
+answerRouter.post("/", authenticate, async (req, res) => {
   try {
     const validated = answerSchema.safeParse(req.body);
     if (!validated.success) {
@@ -31,7 +32,7 @@ answerRouter.post("/", async (req, res) => {
   }
 });
 
-answerRouter.get("/question/:id", async (req, res) => {
+answerRouter.get("/question/:id", authenticate, async (req, res) => {
   try {
     const questionId = parseInt(req.params.id);
     if (isNaN(questionId)) {
@@ -50,7 +51,7 @@ answerRouter.get("/question/:id", async (req, res) => {
   }
 });
 
-answerRouter.get("/:id", async (req, res) => {
+answerRouter.get("/:id", authenticate, async (req, res) => {
   try {
     const answerId = parseInt(req.params.id);
     if (isNaN(answerId)) {

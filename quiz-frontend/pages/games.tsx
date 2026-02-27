@@ -14,34 +14,39 @@ const Game = () => {
 
   useEffect(() => {
     const questionsData = localStorage.getItem("questions");
-
     if (questionsData) {
       setQuestions(JSON.parse(questionsData));
     }
-
     localStorage.setItem("currentScore", `${currentScoreData}`);
   }, [currentScoreData]);
 
-  const handleSubmit = async (selectedAnswerId: number) => {
-    try {
-      const url = `/api/answer/${selectedAnswerId}`;
-      const response = await fetch(url);
-      const answer = await response.json();
-
-      if (answer.result_answer === true) {
-        setCurrentScoreData(currentScoreData + 1);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const handleSubmit = async (selectedAnswerId: number | null) => {
+  try {
+    if (selectedAnswerId === null) {
+      // pas de réponse sélectionnée, on passe à la question suivante
+      return;
     }
-  };
+    const token = localStorage.getItem("token");
+    const url = `/api/answer/${selectedAnswerId}`;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const answer = await response.json();
+    if (answer.result_answer === true) {
+      setCurrentScoreData(currentScoreData + 1);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  }
+};
 
   useEffect(() => {
     if (currentQuestionIndex >= questions.length) {
-      // Toutes les questions ont été répondues, rediriger vers "/endscore"
-      // Effectuez ici votre logique de redirection vers "/endscore"
+      // Toutes les questions ont été répondues
     }
   }, [currentQuestionIndex, questions.length]);
 
@@ -51,91 +56,66 @@ const Game = () => {
         <div>
           <Menu />
           <div className="my-6 min-content-height">
-          <QuestionCard
-            currentQuestionIndex={currentQuestionIndex}
-            questions={questions}
-            onSubmit={handleSubmit}
-          />
-          <AnimatedBackground />
+            <QuestionCard
+              currentQuestionIndex={currentQuestionIndex}
+              questions={questions}
+              onSubmit={handleSubmit}
+            />
+            <AnimatedBackground />
           </div>
           <PiedDePage />
         </div>
       );
     } else {
       try {
+        const token = localStorage.getItem("token");
         const finalScore = localStorage.getItem("currentScore");
         let userId = localStorage.getItem("user");
-        if(userId){
-          userId= JSON.parse(userId)
+        if (userId) {
+          userId = JSON.parse(userId);
         }
         const moduleData = localStorage.getItem("questions");
         let moduleId = null;
         let levelModule = "";
         if (moduleData && typeof moduleData === "string") {
           const moduleObj = JSON.parse(moduleData);
-          console.log(moduleObj)
           moduleId = moduleObj[0].module_id;
           levelModule = moduleObj[0].question_level;
-          console.log(levelModule);
         }
 
-        let success = false;
-
-        if (currentScoreData / questions.length > 0.5) {
-          success = true;
-        } else {
-          success = false;
-        }
+        const success = currentScoreData / questions.length > 0.5;
 
         const res = fetch(`/api/achievment/`, {
           method: "post",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             moduleId: moduleId,
             userId: userId,
-            finalScore: parseInt(finalScore??"0")/questions.length*100,
+            finalScore: parseInt(finalScore ?? "0") / questions.length * 100,
             levelModule: levelModule,
             success: success,
           }),
         });
-        
-        localStorage.setItem("endQuizData",JSON.stringify({
+
+        localStorage.setItem("endQuizData", JSON.stringify({
           moduleId: moduleId,
           userId: userId,
-          finalScore: parseInt(finalScore??"0")/questions.length*100,
+          finalScore: parseInt(finalScore ?? "0") / questions.length * 100,
           levelModule: levelModule,
           success: success,
-        }))
+        }));
+
         push("/endscore");
         console.log(res);
-        // if (res.ok) {
-        //   router.push('/endscore')
-        // } else {
-        //   throw new Error("Error during user signup.");
-        // }
       } catch (error) {
         console.error(error);
-        // Gérer l'erreur de manière appropriée (affichage d'un message d'erreur, etc.)
       }
-      // Effectuez ici vos opérations asynchrones, comme l'appel à l'API
-
-      // return (
-        
-      //   <div>
-      //     <Menu />
-      //     <h1>Score total: {currentScoreData}/{questions.length}</h1>
-      //     <AnimatedBackground />
-      //     <PiedDePage />
-      //   </div>
-      // );
-      // } catch (error) {
-      //   console.error(error);
-      // }
     }
   } else {
-    return null; // Vous pouvez également afficher un message de chargement ou une indication que les questions sont en cours de chargement
+    return null;
   }
 };
 

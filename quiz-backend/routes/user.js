@@ -3,6 +3,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import modelUser from "../prisma/CRUD/user.js";
+import authenticate from "../middleware/authenticateToken.js";
 
 const userRouter = express.Router();
 
@@ -20,7 +21,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Mot de passe requis"),
 });
 
-userRouter.get("/", async (req, res) => {
+userRouter.get("/", authenticate, async (req, res) => {
   try {
     const users = await modelUser.getAllUsers();
     res.json(users);
@@ -92,7 +93,7 @@ userRouter.post("/login", async (req, res) => {
   }
 });
 
-userRouter.get("/:id", async (req, res) => {
+userRouter.get("/:id", authenticate, async (req, res) => {
   try {
     const userId = parseInt(req.params.id);
     if (isNaN(userId)) {
