@@ -34,7 +34,7 @@ export default function SignUp() {
       });
 
       if (res.ok) {
-        router.push('/login');
+        router.push('/logIn');
       } else {
         const { message } = await res.json();
         setErrorMessage(message ?? "Erreur lors de l'inscription.");
