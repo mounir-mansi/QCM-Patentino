@@ -5,7 +5,7 @@ import Title from "@/components/Title";
 import ModuleCard from "@/components/Card";
 import AnimatedBackground from "@/components/Background";
 
-const LEVELS = ["facile", "intermediaire", "difficile"];
+const LEVELS = ["facile", "intermediaire", "difficile"] as const;
 
 const IMAGES = {
   facile: "https://res.cloudinary.com/cloudinary-marketing/images/c_fill,w_750/f_auto,q_auto/v1649720213/Web_Assets/blog/php_upload_cover_blog/php_upload_cover_blog-jpg?_i=AA",
