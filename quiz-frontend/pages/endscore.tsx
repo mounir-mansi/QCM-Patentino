@@ -6,26 +6,34 @@ import PiedDePage from "@/components/Footer";
 import Menu from "@/components/Menu";
 import AnimatedBackground from "@/components/Background";
 
+interface QuizData {
+  finalScore?: number;
+  success?: boolean;
+  moduleId?: number;
+  userId?: number;
+  levelModule?: string;
+}
+
 const EndScore = () => {
   const { push } = useRouter();
-  const [quizData, setQuizData] = useState({});
+  const [quizData, setQuizData] = useState<QuizData>({});
   const [animatedScore, setAnimatedScore] = useState(0);
 
   const goToMyScores = () => {
     push("/myscores");
-  }
+  };
 
   useEffect(() => {
-    setQuizData(JSON.parse(localStorage.getItem("endQuizData") ?? ""));
-    if (quizData?.finalScore) {
-      animateScore(quizData?.finalScore);
+    const data = JSON.parse(localStorage.getItem("endQuizData") ?? "{}");
+    setQuizData(data);
+    if (data?.finalScore) {
+      animateScore(data.finalScore);
     }
-  }, [quizData?.finalScore]);
+  }, []);
 
-  const animateScore = (finalScore) => {
+  const animateScore = (finalScore: number) => {
     let currentScore = 0;
-    const step = Math.ceil(finalScore / 50); // 50 steps for animation
-
+    const step = Math.ceil(finalScore / 50);
     const interval = setInterval(() => {
       currentScore += step;
       if (currentScore >= finalScore) {
@@ -33,16 +41,13 @@ const EndScore = () => {
         clearInterval(interval);
       }
       setAnimatedScore(currentScore);
-    }, 20); // 20ms per step, adjust as needed
+    }, 20);
   };
-
-  console.log(quizData);
 
   return (
     <div>
       <Menu />
       <AnimatedBackground />
-
       <div className="grid place-items-center my-6 min-content-height">
         <Card>
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -53,20 +58,14 @@ const EndScore = () => {
           <p className="font-normal text-gray-700 dark:text-gray-400 text-center">
             Vous avez obtenu un score de:
           </p>
-
-            <span className={`${
-              quizData?.success ? "text-green-700" : "text-red-700"
-            } text-center text-6xl font-bold`}
-            >
-              {isNaN(animatedScore) ? 0 : Math.round(animatedScore)}%
-            </span>
-
-
+          <span className={`${
+            quizData?.success ? "text-green-700" : "text-red-700"
+          } text-center text-6xl font-bold`}>
+            {isNaN(animatedScore) ? 0 : Math.round(animatedScore)}%
+          </span>
           <Button onClick={goToMyScores} color="failure" pill>Voir mes scores</Button>
-            
         </Card>
       </div>
-
       <PiedDePage />
     </div>
   );
