@@ -24,7 +24,12 @@ export async function getServerSideProps() {
   }
 }
 
-export default function QuizSelect({ modules }) {
+type Module = {
+  id: number;
+  module_title: string;
+};
+
+export default function QuizSelect({ modules }: { modules: Module[] }) {
   return (
     <div>
       <Menu />
@@ -48,3 +53,4 @@ export default function QuizSelect({ modules }) {
     </div>
   );
 }
+
