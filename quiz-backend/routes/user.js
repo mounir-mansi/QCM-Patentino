@@ -55,7 +55,7 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
-userRouter.post("/login", async (req, res) => {
+userRouter.post("/logIn", async (req, res) => {
   try {
     const validated = loginSchema.safeParse(req.body);
     if (!validated.success) {
