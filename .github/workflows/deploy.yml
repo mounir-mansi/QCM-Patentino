@@ -10,24 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install & Build
-        run: |
-          cd quiz-frontend
-          npm install --legacy-peer-deps
-          npm run build
-
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p 2222 -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-
-      - name: Sync frontend
-        run: |
-          rsync -avz --delete -e "ssh -p 2222" \
-            quiz-frontend/.next/ \
-            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/QCM-Patentino/quiz-frontend/.next/
 
       - name: Sync backend
         run: |
@@ -36,7 +24,14 @@ jobs:
             quiz-backend/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/QCM-Patentino/quiz-backend/
 
-      - name: Restart
+      - name: Sync frontend sources
+        run: |
+          rsync -avz --delete -e "ssh -p 2222" \
+            --exclude='node_modules' --exclude='.next' \
+            quiz-frontend/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/QCM-Patentino/quiz-frontend/
+
+      - name: Build et restart sur le serveur
         run: |
           ssh -p 2222 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /var/www/QCM-Patentino/quiz-backend && npm install && pm2 restart all"
+            "cd /var/www/QCM-Patentino/quiz-frontend && npm install --legacy-peer-deps && npm run build && pm2 restart quiz-frontend && cd ../quiz-backend && npm install && pm2 restart quiz-backend"
