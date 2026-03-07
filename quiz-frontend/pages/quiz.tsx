@@ -31,23 +31,25 @@ type Module = {
 
 export default function QuizSelect({ modules }: { modules: Module[] }) {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Menu />
-      <div className="grid place-items-center">
-        <Title title='Deviendras-tu le chef de la Quizine ?' />
-      </div>
       <AnimatedBackground />
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-3 place-items-center mb-6">
-        {modules.map((module) =>
-          LEVELS.map((level) => (
-            <ModuleCard
-              key={`${module.id}-${level}`}
-              module={module.module_title}
-              level={level}
-              image={IMAGES[level]}
-            />
-          ))
-        )}
+      <div className="relative z-10 mt-2 flex flex-col flex-1">
+        <div className="grid place-items-center">
+          <Title title='Deviendras-tu le chef de la Quizine ?' />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 place-items-center mb-6 px-4">
+          {modules.map((module) =>
+            LEVELS.map((level) => (
+              <ModuleCard
+                key={`${module.id}-${level}`}
+                module={module.module_title}
+                level={level}
+                image={IMAGES[level]}
+              />
+            ))
+          )}
+        </div>
       </div>
       <PiedDePage />
     </div>
