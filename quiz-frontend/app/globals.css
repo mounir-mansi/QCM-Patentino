@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --red:        #c0392b;
+  --red-light:  #e74c3c;
+  --cream:      #fdf6e3;
+  --navy:       #1a2235;
+  --navy-light: #242e42;
+  --gold:       #d4a853;
+  --text-dark:  #1a1a1a;
+}
+
 @layer base {
   .font-outline-2 {
     -webkit-text-stroke: 2px rgb(224, 36, 36);
@@ -24,12 +34,9 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
 .min-content-height {
@@ -38,7 +45,7 @@ body {
 
 @keyframes move {
   100% {
-      transform: translate3d(0, 0, 1px) rotate(360deg);
+    transform: translate3d(0, 0, 1px) rotate(360deg);
   }
 }
 
@@ -74,6 +81,7 @@ body {
   transform-origin: -10vw -18vh;
   box-shadow: 10vmin 0 1.6449521795736617vmin currentColor;
 }
+
 .background span:nth-child(1) {
   color: #242e42;
   top: 91%;
@@ -83,6 +91,7 @@ body {
   transform-origin: 18vw -13vh;
   box-shadow: -10vmin 0 2.2327709314702417vmin currentColor;
 }
+
 .background span:nth-child(2) {
   color: #8f0000;
   top: 95%;
@@ -92,6 +101,7 @@ body {
   transform-origin: 6vw -24vh;
   box-shadow: -10vmin 0 1.3336148916990662vmin currentColor;
 }
+
 .background span:nth-child(3) {
   color: #dc3c35;
   top: 44%;
@@ -101,6 +111,7 @@ body {
   transform-origin: 12vw -9vh;
   box-shadow: 10vmin 0 1.6662781948482106vmin currentColor;
 }
+
 .background span:nth-child(4) {
   color: #8f0000;
   top: 27%;
@@ -110,6 +121,7 @@ body {
   transform-origin: 12vw 6vh;
   box-shadow: -10vmin 0 1.925306505632188vmin currentColor;
 }
+
 .background span:nth-child(5) {
   color: #8f0000;
   top: 21%;
@@ -119,6 +131,7 @@ body {
   transform-origin: -2vw -6vh;
   box-shadow: -10vmin 0 2.1353031158841453vmin currentColor;
 }
+
 .background span:nth-child(6) {
   color: #242e42;
   top: 26%;
@@ -128,6 +141,7 @@ body {
   transform-origin: -8vw -12vh;
   box-shadow: -10vmin 0 1.8370243920665354vmin currentColor;
 }
+
 .background span:nth-child(7) {
   color: #dc3c35;
   top: 33%;
@@ -137,6 +151,7 @@ body {
   transform-origin: -5vw -15vh;
   box-shadow: -10vmin 0 1.4744589838770032vmin currentColor;
 }
+
 .background span:nth-child(8) {
   color: #8f0000;
   top: 79%;
@@ -146,6 +161,7 @@ body {
   transform-origin: 6vw 14vh;
   box-shadow: 10vmin 0 1.8420918946105027vmin currentColor;
 }
+
 .background span:nth-child(9) {
   color: #8f0000;
   top: 37%;
@@ -155,6 +171,7 @@ body {
   transform-origin: -5vw -2vh;
   box-shadow: 10vmin 0 1.9359128176873128vmin currentColor;
 }
+
 .background span:nth-child(10) {
   color: #8f0000;
   top: 10%;
@@ -164,6 +181,7 @@ body {
   transform-origin: -20vw 7vh;
   box-shadow: -10vmin 0 1.583590848770435vmin currentColor;
 }
+
 .background span:nth-child(11) {
   color: #8f0000;
   top: 36%;
@@ -173,6 +191,7 @@ body {
   transform-origin: 17vw -18vh;
   box-shadow: 10vmin 0 1.324288588741106vmin currentColor;
 }
+
 .background span:nth-child(12) {
   color: #dc3c35;
   top: 30%;
@@ -182,6 +201,7 @@ body {
   transform-origin: 15vw 10vh;
   box-shadow: -10vmin 0 1.8164805133944357vmin currentColor;
 }
+
 .background span:nth-child(13) {
   color: #8f0000;
   top: 22%;
@@ -191,6 +211,7 @@ body {
   transform-origin: 22vw -13vh;
   box-shadow: -10vmin 0 1.5587610734096513vmin currentColor;
 }
+
 .background span:nth-child(14) {
   color: #8f0000;
   top: 27%;
@@ -200,6 +221,7 @@ body {
   transform-origin: -6vw -21vh;
   box-shadow: -10vmin 0 2.0773978968784093vmin currentColor;
 }
+
 .background span:nth-child(15) {
   color: #dc3c35;
   top: 47%;
@@ -209,6 +231,7 @@ body {
   transform-origin: 11vw 23vh;
   box-shadow: 10vmin 0 1.4479471975570597vmin currentColor;
 }
+
 .background span:nth-child(16) {
   color: #8f0000;
   top: 23%;
@@ -218,6 +241,7 @@ body {
   transform-origin: -17vw 16vh;
   box-shadow: 10vmin 0 1.6604026032241652vmin currentColor;
 }
+
 .background span:nth-child(17) {
   color: #8f0000;
   top: 20%;
@@ -227,6 +251,7 @@ body {
   transform-origin: 6vw -8vh;
   box-shadow: -10vmin 0 1.634651145924843vmin currentColor;
 }
+
 .background span:nth-child(18) {
   color: #8f0000;
   top: 57%;
@@ -236,6 +261,7 @@ body {
   transform-origin: 2vw 15vh;
   box-shadow: -10vmin 0 2.0260925949877198vmin currentColor;
 }
+
 .background span:nth-child(19) {
   color: #242e42;
   top: 97%;
@@ -245,6 +271,7 @@ body {
   transform-origin: -6vw 25vh;
   box-shadow: 10vmin 0 2.1110895275555626vmin currentColor;
 }
+
 .background span:nth-child(20) {
   color: #242e42;
   top: 57%;
@@ -254,6 +281,7 @@ body {
   transform-origin: -4vw 17vh;
   box-shadow: -10vmin 0 2.1326941685399072vmin currentColor;
 }
+
 .background span:nth-child(21) {
   color: #242e42;
   top: 18%;
@@ -263,6 +291,7 @@ body {
   transform-origin: 17vw 22vh;
   box-shadow: 10vmin 0 1.2549302850828201vmin currentColor;
 }
+
 .background span:nth-child(22) {
   color: #242e42;
   top: 45%;
@@ -272,6 +301,7 @@ body {
   transform-origin: 10vw -16vh;
   box-shadow: 10vmin 0 1.6217297034002227vmin currentColor;
 }
+
 .background span:nth-child(23) {
   color: #242e42;
   top: 88%;
@@ -281,6 +311,7 @@ body {
   transform-origin: -5vw 1vh;
   box-shadow: -10vmin 0 2.165344484080003vmin currentColor;
 }
+
 .background span:nth-child(24) {
   color: #dc3c35;
   top: 64%;
@@ -290,6 +321,7 @@ body {
   transform-origin: -8vw -11vh;
   box-shadow: -10vmin 0 1.9371130150589775vmin currentColor;
 }
+
 .background span:nth-child(25) {
   color: #8f0000;
   top: 55%;
@@ -299,6 +331,7 @@ body {
   transform-origin: -4vw 17vh;
   box-shadow: -10vmin 0 1.9633287244943136vmin currentColor;
 }
+
 .background span:nth-child(26) {
   color: #8f0000;
   top: 34%;
@@ -308,6 +341,7 @@ body {
   transform-origin: 21vw 12vh;
   box-shadow: -10vmin 0 1.8133634042637619vmin currentColor;
 }
+
 .background span:nth-child(27) {
   color: #8f0000;
   top: 72%;
@@ -317,6 +351,7 @@ body {
   transform-origin: -24vw -8vh;
   box-shadow: 10vmin 0 2.1046405497213874vmin currentColor;
 }
+
 .background span:nth-child(28) {
   color: #dc3c35;
   top: 80%;
@@ -326,6 +361,7 @@ body {
   transform-origin: -24vw -11vh;
   box-shadow: -10vmin 0 2.1941096438503918vmin currentColor;
 }
+
 .background span:nth-child(29) {
   color: #8f0000;
   top: 91%;
@@ -335,6 +371,7 @@ body {
   transform-origin: 11vw 15vh;
   box-shadow: -10vmin 0 1.867870202945796vmin currentColor;
 }
+
 .background span:nth-child(30) {
   color: #dc3c35;
   top: 73%;
@@ -344,6 +381,7 @@ body {
   transform-origin: 23vw 4vh;
   box-shadow: -10vmin 0 1.379846021253355vmin currentColor;
 }
+
 .background span:nth-child(31) {
   color: #8f0000;
   top: 91%;
@@ -353,6 +391,7 @@ body {
   transform-origin: 14vw 21vh;
   box-shadow: -10vmin 0 1.2768247344439798vmin currentColor;
 }
+
 .background span:nth-child(32) {
   color: #dc3c35;
   top: 68%;
@@ -362,6 +401,7 @@ body {
   transform-origin: 3vw -16vh;
   box-shadow: -10vmin 0 2.2073026609287645vmin currentColor;
 }
+
 .background span:nth-child(33) {
   color: #8f0000;
   top: 56%;
@@ -371,6 +411,7 @@ body {
   transform-origin: -14vw -7vh;
   box-shadow: 10vmin 0 1.4972805159230205vmin currentColor;
 }
+
 .background span:nth-child(34) {
   color: #8f0000;
   top: 89%;
@@ -380,6 +421,7 @@ body {
   transform-origin: 13vw -1vh;
   box-shadow: -10vmin 0 1.3806015129509686vmin currentColor;
 }
+
 .background span:nth-child(35) {
   color: #242e42;
   top: 74%;
@@ -389,6 +431,7 @@ body {
   transform-origin: 15vw -22vh;
   box-shadow: -10vmin 0 2.1231392743202084vmin currentColor;
 }
+
 .background span:nth-child(36) {
   color: #242e42;
   top: 49%;
@@ -398,6 +441,7 @@ body {
   transform-origin: 1vw -4vh;
   box-shadow: 10vmin 0 1.8063116534743637vmin currentColor;
 }
+
 .background span:nth-child(37) {
   color: #8f0000;
   top: 43%;
@@ -407,6 +451,7 @@ body {
   transform-origin: -15vw 20vh;
   box-shadow: 10vmin 0 1.3499816410218888vmin currentColor;
 }
+
 .background span:nth-child(38) {
   color: #8f0000;
   top: 52%;
@@ -416,6 +461,7 @@ body {
   transform-origin: 17vw -24vh;
   box-shadow: -10vmin 0 1.6776607912396808vmin currentColor;
 }
+
 .background span:nth-child(39) {
   color: #dc3c35;
   top: 34%;
@@ -425,6 +471,7 @@ body {
   transform-origin: -13vw 14vh;
   box-shadow: -10vmin 0 1.9764436266573129vmin currentColor;
 }
+
 .background span:nth-child(40) {
   color: #8f0000;
   top: 79%;
@@ -434,6 +481,7 @@ body {
   transform-origin: 2vw -6vh;
   box-shadow: -10vmin 0 2.1118788739165764vmin currentColor;
 }
+
 .background span:nth-child(41) {
   color: #dc3c35;
   top: 28%;
@@ -443,6 +491,7 @@ body {
   transform-origin: 24vw -5vh;
   box-shadow: 10vmin 0 2.1050172220264773vmin currentColor;
 }
+
 .background span:nth-child(42) {
   color: #8f0000;
   top: 48%;
@@ -452,6 +501,7 @@ body {
   transform-origin: -8vw -3vh;
   box-shadow: 10vmin 0 1.5472969350830517vmin currentColor;
 }
+
 .background span:nth-child(43) {
   color: #dc3c35;
   top: 45%;
@@ -461,6 +511,7 @@ body {
   transform-origin: 12vw -20vh;
   box-shadow: -10vmin 0 2.140707529993241vmin currentColor;
 }
+
 .background span:nth-child(44) {
   color: #242e42;
   top: 6%;
@@ -470,6 +521,7 @@ body {
   transform-origin: 9vw 0vh;
   box-shadow: -10vmin 0 2.182705192931448vmin currentColor;
 }
+
 .background span:nth-child(45) {
   color: #dc3c35;
   top: 19%;
@@ -479,6 +531,7 @@ body {
   transform-origin: 0vw -23vh;
   box-shadow: 10vmin 0 2.246245210580276vmin currentColor;
 }
+
 .background span:nth-child(46) {
   color: #8f0000;
   top: 59%;
@@ -488,6 +541,7 @@ body {
   transform-origin: -10vw 17vh;
   box-shadow: -10vmin 0 1.3655799037207468vmin currentColor;
 }
+
 .background span:nth-child(47) {
   color: #8f0000;
   top: 72%;
@@ -497,6 +551,7 @@ body {
   transform-origin: -16vw 23vh;
   box-shadow: -10vmin 0 2.129462149253234vmin currentColor;
 }
+
 .background span:nth-child(48) {
   color: #8f0000;
   top: 28%;
@@ -506,6 +561,7 @@ body {
   transform-origin: 6vw 2vh;
   box-shadow: -10vmin 0 1.6951610367487036vmin currentColor;
 }
+
 .background span:nth-child(49) {
   color: #dc3c35;
   top: 11%;
@@ -515,4 +571,3 @@ body {
   transform-origin: -23vw 18vh;
   box-shadow: -10vmin 0 1.3578049885091696vmin currentColor;
 }
-
