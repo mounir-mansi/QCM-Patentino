@@ -55,7 +55,7 @@ const Game = () => {
       return (
         <div>
           <Menu />
-          <div className="my-6 min-content-height">
+          <div className="relative z-10 flex justify-center my-6 min-content-height">
             <QuestionCard
               currentQuestionIndex={currentQuestionIndex}
               questions={questions}

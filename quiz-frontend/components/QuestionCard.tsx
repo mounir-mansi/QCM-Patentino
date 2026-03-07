@@ -49,43 +49,44 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
   };
 
   return (
-    <div className="container w-full lg:w-[50%] my-10 mx-auto lg:ml-[25%]">
-      <div className="container bg-white h-full px-3 py-1 rounded-md shadow-md">
-        <div className="text-center">
-          <div className="mx-3 my-3 rounded-3xl w-full">
-            <div className="text-black text-2xl">
-              <Timer onTerminated={handleTerminated} questionId={questions[currentQuestionIndex].id} />
-            </div>
-          </div>
+    <div className="w-full max-w-2xl mx-auto px-4">
+      {/* Timer */}
+      <div className="bg-white rounded-lg shadow-md px-4 py-3 mb-4">
+        <div className="text-center text-black text-xl">
+          <Timer onTerminated={handleTerminated} questionId={questions[currentQuestionIndex].id} />
         </div>
       </div>
-      <div className="container -mb-10 h-full p-3">
-        <div className="text-center">
-          <button className="bg-gray-dark mx-3 rounded-full lg:w-[40%] cursor-default shadow sm:w-[50%]">
-            <div className="my-3 text-white lg:text-2xl sm:text-xl">
-              Question {currentQuestionIndex + 1}/{questions.length}
-            </div>
-          </button>
+
+      {/* Badge question */}
+      <div className="flex justify-center -mb-5 relative z-10">
+        <button className="bg-gray-dark rounded-full px-6 cursor-default shadow">
+          <div className="py-2 text-white text-sm sm:text-xl">
+            Question {currentQuestionIndex + 1}/{questions.length}
+          </div>
+        </button>
+      </div>
+
+      {/* Question + réponses */}
+      <div className="bg-white rounded-lg shadow-md px-4 pt-10 pb-6">
+        <p className="text-center text-base sm:text-xl text-black font-medium mb-6">
+          {questions[currentQuestionIndex].question_title}
+        </p>
+        <div className="flex flex-col items-center gap-2">
+          {answers.map((answer: Answer) => (
+            <AnswerButton
+              key={answer.id}
+              answer={answer}
+              isClicked={selectedAnswer === answer.id}
+              validated={validated}
+              onClick={setSelectedAnswer}
+            />
+          ))}
         </div>
       </div>
-      <div className="container bg-white h-full p-3 rounded-md shadow-md">
-        <ul className="text-center my-10">
-          <li className="my-5 text-2xl text-black">{questions[currentQuestionIndex].question_title}</li>
-          <div className="flex flex-col items-center">
-            {answers.map((answer: Answer) => (
-              <AnswerButton
-                key={answer.id}
-                answer={answer}
-                isClicked={selectedAnswer === answer.id}
-                validated={validated}
-                onClick={setSelectedAnswer}
-              />
-            ))}
-          </div>
-        </ul>
-      </div>
-      <div className="container h-full p-3 flex justify-center items-center">
-        <Button color="success" pill className="shadow-md my-3 w-[70%]" onClick={handleValidateClick}>
+
+      {/* Bouton valider */}
+      <div className="flex justify-center mt-4 mb-6">
+        <Button color="success" pill className="shadow-md w-3/4 sm:w-1/2" onClick={handleValidateClick}>
           Valider
         </Button>
       </div>
