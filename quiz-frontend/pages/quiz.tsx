@@ -35,10 +35,10 @@ export default function QuizSelect({ modules }: { modules: Module[] }) {
       <Menu />
       <AnimatedBackground />
       <div className="relative z-10 mt-2 flex flex-col flex-1">
-        <div className="grid place-items-center">
+        <div className="grid place-items-center mt-1 px-4">
           <Title title='Deviendras-tu le chef de la Quizine ?' />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 place-items-center mb-6 px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-6xl px-4 mb-6 mx-auto">          
           {modules.map((module) =>
             LEVELS.map((level) => (
               <ModuleCard
