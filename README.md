@@ -117,6 +117,90 @@ QCM-Patentino/
 | POST    | /achievment          | Enregistrer un score    | Oui  |
 | GET     | /achievment/user/:id | Scores d'un utilisateur | Oui  |
 
+## Déploiement en production
+
+### Première installation sur le serveur
+
+```bash
+# 1. Activer le firewall en premier
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp     # ou votre port SSH personnalisé
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+
+# 2. Cloner le projet
+git clone https://github.com/mounir-mansi/QCM-Patentino.git /var/www/QCM-Patentino
+
+# 3. Installer les dépendances et builder
+cd /var/www/QCM-Patentino/quiz-frontend
+npm ci
+npm audit --audit-level=high
+npm run build
+
+cd /var/www/QCM-Patentino/quiz-backend
+npm ci
+npm audit --audit-level=high
+
+# 4. Démarrer avec PM2
+pm2 start npm --name quiz-frontend -- start
+pm2 start npm --name quiz-backend -- start
+pm2 save
+pm2 startup
+
+# 5. Installer CrowdSec (protection automatique contre les attaques)
+curl -fsSL https://install.crowdsec.net | sudo sh
+sudo apt install -y crowdsec crowdsec-firewall-bouncer-iptables
+```
+
+### Déploiement continu
+
+Créer le script `~/deploy.sh` sur le serveur :
+
+```bash
+#!/bin/bash
+cd /var/www/QCM-Patentino
+git fetch origin main
+git reset --hard origin/main
+cd quiz-frontend
+npm ci
+npm audit --audit-level=high || exit 1
+npm run build
+pm2 restart quiz-frontend
+```
+
+Puis lancer avec :
+
+```bash
+bash ~/deploy.sh
+```
+
+### Architecture réseau
+
+```
+Internet
+    |
+  443 / 80  (Nginx - reverse proxy)
+    |
+    +---> :3000  (Next.js frontend)   [localhost uniquement]
+    |
+    +---> :5500  (Express backend)    [localhost uniquement]
+    |
+  UFW bloque tout le reste
+```
+
+Le backend ne doit jamais être exposé directement sur internet.
+
+### Vérifications post-déploiement
+
+```bash
+pm2 status
+npm audit --audit-level=high
+crontab -l
+ps aux | grep -E "kinsing|xmrig|kdev"
+```
+
 ## Sécurité
 
 - Mots de passe hashés avec Argon2
@@ -124,3 +208,8 @@ QCM-Patentino/
 - Validation des données entrantes avec Zod
 - Routes sensibles protégées par middleware
 - Variables d'environnement pour les données sensibles
+- Firewall UFW (ports 80, 443, SSH uniquement)
+- CrowdSec avec bouncer iptables (blocage automatique des IPs malveillantes)
+- Fail2ban actif sur SSH et Nginx
+- Backend inaccessible depuis l'extérieur (reverse proxy Nginx uniquement)
+- Audit des dépendances npm avant chaque déploiement
