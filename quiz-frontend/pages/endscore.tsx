@@ -71,4 +71,8 @@ const EndScore = () => {
   );
 };
 
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
+
 export default EndScore;
