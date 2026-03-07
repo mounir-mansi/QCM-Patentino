@@ -10,7 +10,7 @@ interface ModuleCardProps {
 
 export default function ModuleCard(props: ModuleCardProps) {
   return (
-    <div className="w-80">
+    <div className="w-full max-w-sm">
       <div className="flex flex-col h-full rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
         <div className="h-48 overflow-hidden relative">
           <Image
