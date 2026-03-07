@@ -4,19 +4,15 @@ import PiedDePage from '@/components/Footer';
 import Menu from '@/components/Menu';
 import SignUpForm from '@/components/SignUpForm';
 
-
 export default function signUp() {
-    return (
-        <div className="">
-            <Menu/>
-
-            <div className="container mx-auto flex flex-col items-center justify-center w-screen min-content-height">
-
-                <SignUpForm/>
-  
-            </div>
-            <AnimatedBackground/>
-            <PiedDePage/>
+  return (
+    <div>
+      <Menu />
+      <AnimatedBackground />
+      <div className="relative z-10 flex items-center justify-center min-content-height px-4">
+        <SignUpForm />
       </div>
-    )
-  }
+      <PiedDePage />
+    </div>
+  )
+}

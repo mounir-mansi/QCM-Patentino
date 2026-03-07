@@ -44,7 +44,7 @@ export default function LogIn() {
 
   return (
     <form
-      className="flex max-w-md flex-col gap-4 border-2 rounded-lg p-4 m-12 w-full bg-gray-light"
+      className="flex max-w-md flex-col gap-4 border border-gray-200 rounded-2xl p-6 w-full bg-white shadow-lg"
       onSubmit={handleLogin}
     >
       {logoutMessage && (
