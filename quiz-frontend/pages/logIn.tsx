@@ -6,10 +6,10 @@ import Menu from '@/components/Menu';
 
 export default function logIn() {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Menu />
       <AnimatedBackground />
-      <div className="relative z-10 flex items-center justify-center min-content-height px-4">
+      <div className="relative z-10 flex items-center justify-center flex-1 px-4 py-6">
         <LogInForm />
       </div>
       <PiedDePage />

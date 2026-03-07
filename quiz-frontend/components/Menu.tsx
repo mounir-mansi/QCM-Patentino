@@ -22,7 +22,8 @@ export default function Menu() {
     localStorage.removeItem("name")
     localStorage.removeItem("user")
     localStorage.removeItem("token")
-    push("/logIn");
+    localStorage.setItem("logoutMessage", "Vous avez été déconnecté.")
+    window.location.href = "/logIn";
   }
 
   const pathName = usePathname();
@@ -43,7 +44,7 @@ export default function Menu() {
   ) : null
 
   return (
-    <div className="dark bg-black">
+    <div className="dark bg-black relative z-50">
       <Navbar fluid={true} rounded={true}>
         <Navbar.Brand>
           <Image
@@ -55,6 +56,16 @@ export default function Menu() {
 
         <div className="flex items-center gap-3 md:order-2">
           {userDropdown}
+          {!email?.length && (
+            <div className="hidden md:flex items-center gap-2">
+              <a href="/logIn">
+                <Button color="light" pill size="sm">Log In</Button>
+              </a>
+              <a href="/signUp">
+                <Button color="failure" pill size="sm">Sign Up</Button>
+              </a>
+            </div>
+          )}
           <Navbar.Toggle />
         </div>
 
@@ -71,14 +82,14 @@ export default function Menu() {
             </Navbar.Link>
           ) : null}
           {!email?.length ? (
-            <>
+            <div className="md:hidden">
               <Navbar.Link href="/logIn" active={pathName === "/logIn"}>
                 Log In
               </Navbar.Link>
               <Navbar.Link href="/signUp" active={pathName === "/signUp"}>
                 Sign Up
               </Navbar.Link>
-            </>
+            </div>
           ) : null}
         </Navbar.Collapse>
       </Navbar>

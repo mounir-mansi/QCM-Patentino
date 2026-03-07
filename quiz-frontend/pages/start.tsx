@@ -74,11 +74,11 @@ const StartQuiz = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Menu />
       <AnimatedBackground />
 
-      <div className="relative z-10 flex items-center justify-center min-content-height px-4">
+      <div className="relative z-10 flex items-center justify-center flex-1 px-4">
         <Card className="w-full max-w-md">
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             Quiz {query.module} – Niveau {query.level}
