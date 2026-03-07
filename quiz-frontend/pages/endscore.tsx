@@ -45,11 +45,11 @@ const EndScore = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Menu />
       <AnimatedBackground />
-      <div className="grid place-items-center my-6 min-content-height">
-        <Card>
+      <div className="relative z-10 flex items-center justify-center flex-1 px-4">
+        <Card className="w-full max-w-md">
           <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {quizData?.success
               ? "Bravo ! Vous avez réussi le quiz."

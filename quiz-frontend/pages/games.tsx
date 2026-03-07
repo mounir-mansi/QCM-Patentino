@@ -55,13 +55,13 @@ const Game = () => {
       return (
         <div>
           <Menu />
-          <div className="relative z-10 flex justify-center my-6 min-content-height">
+          <AnimatedBackground />
+          <div className="flex justify-center my-6 min-content-height">
             <QuestionCard
               currentQuestionIndex={currentQuestionIndex}
               questions={questions}
               onSubmit={handleSubmit}
             />
-            <AnimatedBackground />
           </div>
           <PiedDePage />
         </div>
