@@ -7,8 +7,8 @@ export default function useAutoLogout() {
   const router = useRouter();
   const timer = useRef<NodeJS.Timeout | null>(null);
 
-const logout = useCallback(() => {
-  localStorage.removeItem("token");
+const logout = useCallback(async () => {
+  await fetch("/api/users/logout", { method: "POST" });
   localStorage.removeItem("user");
   localStorage.removeItem("email");
   localStorage.removeItem("firstname");
@@ -26,8 +26,8 @@ const logout = useCallback(() => {
   }, [logout]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    const email = localStorage.getItem("email");
+    if (!email) return;
 
     const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
     events.forEach((event) => window.addEventListener(event, resetTimer));

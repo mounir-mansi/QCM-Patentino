@@ -26,13 +26,8 @@ const Game = () => {
       // pas de réponse sélectionnée, on passe à la question suivante
       return;
     }
-    const token = localStorage.getItem("token");
     const url = `/api/answer/${selectedAnswerId}`;
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(url);
     const answer = await response.json();
     if (answer.result_answer === true) {
       setCurrentScoreData(currentScoreData + 1);
@@ -68,7 +63,6 @@ const Game = () => {
       );
     } else {
       try {
-        const token = localStorage.getItem("token");
         const finalScore = localStorage.getItem("currentScore");
         let userId = localStorage.getItem("user");
         if (userId) {
@@ -87,10 +81,7 @@ const Game = () => {
 
         const res = fetch(`/api/achievment/`, {
           method: "post",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             moduleId: moduleId,
             userId: userId,

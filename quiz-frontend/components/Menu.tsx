@@ -17,12 +17,12 @@ export default function Menu() {
     setName(localStorage.getItem("name") ?? "");
   }, [])
 
-  const logOut = () => {
-    localStorage.removeItem("email")
-    localStorage.removeItem("name")
-    localStorage.removeItem("user")
-    localStorage.removeItem("token")
-    localStorage.setItem("logoutMessage", "Vous avez été déconnecté.")
+  const logOut = async () => {
+    await fetch("/api/users/logout", { method: "POST" });
+    localStorage.removeItem("email");
+    localStorage.removeItem("name");
+    localStorage.removeItem("user");
+    localStorage.setItem("logoutMessage", "Vous avez été déconnecté.");
     window.location.href = "/logIn";
   }
 

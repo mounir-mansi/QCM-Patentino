@@ -26,15 +26,11 @@ const StartQuiz = () => {
         const storedQuestions = localStorage.getItem("usedQuestions");
         const exclude = storedQuestions ? JSON.parse(storedQuestions) : [];
 
-        const token = localStorage.getItem("token");
         const url = `/api/question/random-50?module=${query.module}&level=${query.level}&exclude=${exclude.join(",")}`;
 
         const response = await fetch(url, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
         });
 
         const data = await response.json();
