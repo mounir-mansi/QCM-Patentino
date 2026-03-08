@@ -13,8 +13,11 @@
     "@prisma/adapter-mariadb": "^7.4.1",
     "@prisma/driver-adapter-utils": "^7.4.1",
     "argon2": "^0.44.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.3.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.18.0",
     "zod": "^4.3.6"

@@ -27,9 +27,8 @@ export default function LogIn() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const { token, message, user, email: usermail, firstname, lastname } = await res.json();
-      if (token) {
-        localStorage.setItem("token", token);
+      const { message, user, email: usermail, firstname, lastname } = await res.json();
+      if (res.ok && user) {
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("email", usermail);
         localStorage.setItem("name", [firstname, lastname].join(" "));

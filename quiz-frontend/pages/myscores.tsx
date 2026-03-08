@@ -32,14 +32,10 @@ const TableScores = () => {
     const getAchievment = async () => {
       try {
         const userId = localStorage.getItem("user");
-        const token = localStorage.getItem("token");
         const url = `/api/achievment/user/${userId}`;
         const response = await fetch(url, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
         });
         const achievmentData = await response.json();
         setAchievment(achievmentData);

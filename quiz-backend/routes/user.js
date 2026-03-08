@@ -1,11 +1,18 @@
 import "dotenv/config";
 import express from "express";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import modelUser from "../prisma/CRUD/user.js";
 import authenticate from "../middleware/authenticateToken.js";
 
 const userRouter = express.Router();
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { message: "Trop de tentatives, réessayez dans 15 minutes." },
+});
 
 const signupSchema = z.object({
   firstname: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
@@ -33,7 +40,7 @@ userRouter.get("/", authenticate, async (req, res) => {
   }
 });
 
-userRouter.post("/signup", async (req, res) => {
+userRouter.post("/signup", authLimiter, async (req, res) => {
   try {
     const validated = signupSchema.safeParse(req.body);
     if (!validated.success) {
@@ -55,7 +62,7 @@ userRouter.post("/signup", async (req, res) => {
   }
 });
 
-userRouter.post("/login", async (req, res) => {
+userRouter.post("/login", authLimiter, async (req, res) => {
   try {
     const validated = loginSchema.safeParse(req.body);
     if (!validated.success) {
@@ -66,22 +73,22 @@ userRouter.post("/login", async (req, res) => {
     const { email, password } = validated.data;
     const compare = await modelUser.comparePasswords(email, password);
 
-    function generateToken(user) {
-      const payload = { id: user.id, email: user.email };
-      return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-    }
-
     if (compare === true) {
       const user = await modelUser.findUserByEmail(email);
       if (user) {
-        const { id, email, firstname, lastname } = user;
-        res.json({
-          token: generateToken(user),
-          user: id,
-          email,
-          firstname,
-          lastname,
+        const { id, email: userEmail, firstname, lastname } = user;
+        const token = jwt.sign(
+          { id, email: userEmail },
+          process.env.JWT_SECRET,
+          { expiresIn: "1h" },
+        );
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 60 * 60 * 1000,
         });
+        res.json({ user: id, email: userEmail, firstname, lastname });
       } else {
         res.status(404).json({ message: "Utilisateur introuvable" });
       }
@@ -91,6 +98,15 @@ userRouter.post("/login", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Erreur de login.", error });
   }
+});
+
+userRouter.post("/logout", (_req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  res.json({ message: "Déconnecté" });
 });
 
 userRouter.get("/:id", authenticate, async (req, res) => {

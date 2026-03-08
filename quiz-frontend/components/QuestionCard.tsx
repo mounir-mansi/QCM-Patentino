@@ -96,14 +96,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ currentQuestionIndex, quest
 
 const getAnswers = async (questionId: number): Promise<Answer[]> => {
   try {
-    const token = localStorage.getItem("token");
     const url = `/api/answer/question/${questionId}`;
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
     });
     const answersData = await response.json();
     return Array.isArray(answersData) ? answersData : [];
