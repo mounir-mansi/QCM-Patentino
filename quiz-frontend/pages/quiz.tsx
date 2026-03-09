@@ -15,7 +15,7 @@ const IMAGES = {
 
 export async function getServerSideProps() {
   try {
-    const res = await fetch("http://localhost:5500/module");
+    const res = await fetch("http://localhost:3001/module");
     const modules = await res.json();
     return { props: { modules } };
   } catch (error) {
