@@ -1,7 +1,14 @@
 import express from "express";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 import achievementModel from "../prisma/CRUD/achievment.js";
 import authenticate from "../middleware/authenticateToken.js";
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { message: "Trop de requêtes, réessayez dans 15 minutes." },
+});
 
 const achievementRouter = express.Router();
 
@@ -13,7 +20,7 @@ const achievementSchema = z.object({
   success: z.boolean({ required_error: "success requis" }),
 });
 
-achievementRouter.post("/", authenticate, async (req, res) => {
+achievementRouter.post("/", apiLimiter, authenticate, async (req, res) => {
   try {
     const validated = achievementSchema.safeParse(req.body);
     if (!validated.success) {

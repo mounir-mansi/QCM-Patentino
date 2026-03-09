@@ -1,8 +1,15 @@
 import express from "express";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 import modelQuestion from "../prisma/CRUD/question.js";
 import authenticate from "../middleware/authenticateToken.js";
 import prisma from "../prisma/client.js";
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { message: "Trop de requêtes, réessayez dans 15 minutes." },
+});
 
 const questionRouter = express.Router();
 
@@ -40,7 +47,7 @@ questionRouter.post("/", authenticate, async (req, res) => {
   }
 });
 
-questionRouter.get("/random-50", authenticate, async (req, res) => {
+questionRouter.get("/random-50", apiLimiter, authenticate, async (req, res) => {
   try {
     const validated = randomSchema.safeParse(req.query);
     if (!validated.success) {
