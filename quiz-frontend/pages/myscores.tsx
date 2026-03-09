@@ -31,11 +31,10 @@ const TableScores = () => {
   useEffect(() => {
     const getAchievment = async () => {
       try {
-        const userId = localStorage.getItem("user");
-        const url = `/api/achievment/user/${userId}`;
-        const response = await fetch(url, {
+        const response = await fetch("/api/achievment/user/me", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
         });
         const achievmentData = await response.json();
         setAchievment(achievmentData);

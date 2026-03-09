@@ -14,7 +14,6 @@ const achievementRouter = express.Router();
 
 const achievementSchema = z.object({
   moduleId: z.number({ required_error: "moduleId requis" }),
-  userId: z.number({ required_error: "userId requis" }),
   finalScore: z.number({ required_error: "finalScore requis" }),
   levelModule: z.string().min(1, "levelModule requis"),
   success: z.boolean({ required_error: "success requis" }),
@@ -28,8 +27,8 @@ achievementRouter.post("/", apiLimiter, authenticate, async (req, res) => {
         .status(400)
         .json({ errors: validated.error.flatten().fieldErrors });
     }
-    const { moduleId, userId, finalScore, levelModule, success } =
-      validated.data;
+    const { moduleId, finalScore, levelModule, success } = validated.data;
+    const userId = req.userData.userId;
     const achievement = await achievementModel.createAchievement(
       moduleId,
       userId,
@@ -105,12 +104,9 @@ achievementRouter.delete("/:id", authenticate, async (req, res) => {
   }
 });
 
-achievementRouter.get("/user/:userId", authenticate, async (req, res) => {
+achievementRouter.get("/user/me", authenticate, async (req, res) => {
   try {
-    const userId = parseInt(req.params.userId);
-    if (isNaN(userId)) {
-      return res.status(400).json({ message: "ID invalide." });
-    }
+    const userId = req.userData.userId;
     const achievements = await achievementModel.getAchievementsByUserId(userId);
     res.json(achievements);
   } catch (error) {
