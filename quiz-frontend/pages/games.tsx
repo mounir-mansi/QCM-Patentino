@@ -79,7 +79,7 @@ const Game = () => {
 
         const success = currentScoreData / questions.length > 0.5;
 
-        const res = fetch(`/api/achievment/`, {
+        await fetch(`/api/achievment/`, {
           method: "post",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

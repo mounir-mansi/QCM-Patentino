@@ -16,8 +16,10 @@ app.disable("x-powered-by");
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", allowedOrigin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Headers",

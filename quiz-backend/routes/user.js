@@ -50,7 +50,7 @@ userRouter.post("/signup", authLimiter, async (req, res) => {
     }
     const existingUser = await modelUser.findUserByEmail(validated.data.email);
     if (existingUser) {
-      return res.status(409).json({ message: "Cet email est déjà utilisé." });
+      return res.status(409).json({ message: "Email ou mot de passe invalide." });
     }
     const user = await modelUser.createUser(validated.data);
     res.status(201).json(user);
