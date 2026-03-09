@@ -20,17 +20,29 @@ const StartQuiz = () => {
     }
   };
 
+  const VALID_LEVELS = ["facile", "intermediaire", "difficile"];
+
   useEffect(() => {
     const loadQuiz = async () => {
       try {
-        const storedQuestions = localStorage.getItem("usedQuestions");
-        const exclude = storedQuestions ? JSON.parse(storedQuestions) : [];
+        const level = query.level as string;
+        const module = query.module as string;
 
-        const url = `/api/question/random-50?module=${query.module}&level=${query.level}&exclude=${exclude.join(",")}`;
+        if (!VALID_LEVELS.includes(level)) return;
+        if (!module || !/^[\w\s\-éèêëàâùûüîïôçœæ]+$/i.test(module) || module.length > 100) return;
+
+        const storedQuestions = localStorage.getItem("usedQuestions");
+        const rawExclude = storedQuestions ? JSON.parse(storedQuestions) : [];
+        const exclude = (rawExclude as unknown[]).filter((id): id is number => typeof id === "number" && Number.isInteger(id));
+
+        const params = new URLSearchParams({ module, level });
+        if (exclude.length > 0) params.set("exclude", exclude.join(","));
+        const url = `/api/question/random-50?${params.toString()}`;
 
         const response = await fetch(url, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
         });
 
         const data = await response.json();
