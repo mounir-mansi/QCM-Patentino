@@ -79,28 +79,29 @@ const Game = () => {
 
         const success = currentScoreData / questions.length > 0.5;
 
-        await fetch(`/api/achievment/`, {
-          method: "post",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            moduleId: moduleId,
-            userId: userId,
-            finalScore: parseInt(finalScore ?? "0") / questions.length * 100,
-            levelModule: levelModule,
-            success: success,
-          }),
-        });
-
-        localStorage.setItem("endQuizData", JSON.stringify({
+        const payload = {
           moduleId: moduleId,
           userId: userId,
           finalScore: parseInt(finalScore ?? "0") / questions.length * 100,
           levelModule: levelModule,
           success: success,
-        }));
+        };
+
+        (async () => {
+          try {
+            await fetch(`/api/achievment/`, {
+              method: "post",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        })();
+
+        localStorage.setItem("endQuizData", JSON.stringify(payload));
 
         push("/endscore");
-        console.log(res);
       } catch (error) {
         console.error(error);
       }
