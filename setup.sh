@@ -1,50 +1,261 @@
 #!/bin/bash
 # ============================================================
-# setup.sh — Installation sécurisée du serveur VPS
-# QCM Patentino — à exécuter en root sur un serveur vierge
+# setup.sh — Sécurisation complète d'un VPS vierge
+# À exécuter en ROOT immédiatement après la première connexion
 # ============================================================
 set -e
 
-echo "=== [1/8] Mise à jour du système ==="
-apt update && apt upgrade -y
-apt install -y curl git ufw fail2ban unattended-upgrades logrotate
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-echo "=== [2/8] Firewall UFW ==="
+ok()   { echo -e "${GREEN}[OK]${NC} $1"; }
+info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
+err()  { echo -e "${RED}[ERREUR]${NC} $1"; exit 1; }
+
+[ "$EUID" -ne 0 ] && err "Lance ce script en root : sudo bash setup.sh"
+
+echo ""
+echo "============================================================"
+echo "  SETUP SÉCURITÉ VPS — $(date '+%Y-%m-%d %H:%M')"
+echo "============================================================"
+echo ""
+
+# ── Collecte des infos ────────────────────────────────────────
+echo -e "${YELLOW}=== Configuration initiale ===${NC}"
+echo ""
+read -p "Nom de domaine (ex: mandev.fr) : "                    DOMAIN
+read -p "Port SSH personnalisé (ex: 2222) : "                 SSH_PORT
+read -p "Nom du user applicatif (ex: deploy) : "              APP_USER
+read -p "Nom de la base de données MySQL : "                   DB_NAME
+read -p "URL SSH du repo GitHub (ex: git@github.com:user/repo.git) : " REPO_URL
+read -p "Email pour les alertes Fail2ban : "                   ALERT_EMAIL
+read -p "Serveur SMTP (ex: smtp.gmail.com) : "                 SMTP_HOST
+read -p "Port SMTP (ex: 587) : "                               SMTP_PORT
+read -p "Adresse email expéditeur : "                          SMTP_FROM
+read -s -p "Mot de passe email expéditeur : "                  SMTP_PASS
+echo ""
+
+echo ""
+info "Génération automatique des mots de passe forts (56 caractères)..."
+GEN_PASS() { openssl rand -base64 42; }
+ROOT_PASS=$(GEN_PASS)
+DEPLOY_PASS=$(GEN_PASS)
+DB_ROOT_PASS=$(GEN_PASS)
+DB_APP_PASS=$(GEN_PASS)
+JWT_SECRET=$(openssl rand -base64 64 | tr -d '\n')
+
+echo ""
+echo -e "${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${RED}║  SAUVEGARDE OBLIGATOIRE — copie dans Bitwarden MAINTENANT   ║${NC}"
+echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo "  Mot de passe ROOT            : $ROOT_PASS"
+echo "  Mot de passe $APP_USER       : $DEPLOY_PASS"
+echo "  Mot de passe MySQL root      : $DB_ROOT_PASS"
+echo "  Mot de passe MySQL $APP_USER : $DB_APP_PASS"
+echo "  JWT_SECRET                   : $JWT_SECRET"
+echo ""
+read -p "Appuie sur ENTRÉE une fois tout sauvegardé dans Bitwarden... "
+
+echo ""
+echo -e "${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${RED}║  ACTION REQUISE MAINTENANT — Pare-feu IONOS                  ║${NC}"
+echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo "  Dans l'espace client IONOS → Serveur → Pare-feu réseau :"
+echo "  Ajouter une règle entrante pour le port $SSH_PORT/TCP"
+echo "  (Sans ça, la connexion SSH sur le nouveau port sera bloquée)"
+echo ""
+read -p "Port $SSH_PORT ajouté dans le pare-feu IONOS ? (o/n) : " FW_OK
+[[ "$FW_OK" != "o" && "$FW_OK" != "O" ]] && warn "N'oublie pas d'ouvrir le port $SSH_PORT dans IONOS avant de tester SSH !"
+
+echo ""
+echo -e "${YELLOW}Clé SSH publique pour le user $APP_USER${NC}"
+echo "  (colle ta clé ed25519 publique, ex: ssh-ed25519 AAAA... mon-pc)"
+read -p "  Clé SSH : " SSH_PUBKEY
+
+[ -z "$DOMAIN" ]      && err "Domaine requis"
+[ -z "$SSH_PORT" ]    && err "Port SSH requis"
+[ -z "$APP_USER" ]    && err "User requis"
+[ -z "$DB_NAME" ]     && err "Nom de base de données requis"
+[ -z "$REPO_URL" ]    && err "URL repo requis"
+[ -z "$SSH_PUBKEY" ]  && err "Clé SSH requise"
+[ -z "$ALERT_EMAIL" ] && err "Email alertes requis"
+
+echo ""
+info "Récapitulatif :"
+info "  Domaine=$DOMAIN | Port SSH=$SSH_PORT | User=$APP_USER | DB=$DB_NAME | Alertes→$ALERT_EMAIL"
+read -p "C'est correct ? (o/n) : " CONFIRM
+[[ "$CONFIRM" != "o" && "$CONFIRM" != "O" ]] && err "Annulé."
+
+USER_HOME="/home/$APP_USER"
+ENV_FILE="/var/www/QCM-Patentino/quiz-backend/.env"
+
+# ── 1. Mots de passe ──────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [1/13] Mots de passe ===${NC}"
+echo "root:$ROOT_PASS" | chpasswd
+ok "Mot de passe root changé"
+
+if ! id "$APP_USER" &>/dev/null; then
+  useradd -m -s /bin/bash "$APP_USER"
+  ok "User $APP_USER créé"
+fi
+echo "$APP_USER:$DEPLOY_PASS" | chpasswd
+ok "Mot de passe $APP_USER changé"
+
+# ── 2. Clé SSH ────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [2/13] Clé SSH ===${NC}"
+mkdir -p "$USER_HOME/.ssh"
+echo "$SSH_PUBKEY" > "$USER_HOME/.ssh/authorized_keys"
+chmod 700 "$USER_HOME/.ssh"
+chmod 600 "$USER_HOME/.ssh/authorized_keys"
+chown -R "$APP_USER:$APP_USER" "$USER_HOME/.ssh"
+ok "Clé SSH configurée pour $APP_USER"
+> /root/.ssh/authorized_keys 2>/dev/null || true
+ok "Clés SSH root vidées"
+
+# ── 3. Mise à jour système ────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [3/13] Mise à jour système ===${NC}"
+apt update -qq && apt upgrade -y -qq
+apt install -y -qq curl git ufw fail2ban unattended-upgrades logrotate \
+  gnupg2 msmtp msmtp-mta rkhunter lynis
+ok "Système à jour"
+
+# ── 4. Firewall UFW ───────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [4/13] Firewall UFW ===${NC}"
+ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
-ufw allow 2222/tcp   # SSH port personnalisé
-ufw allow 80/tcp
-ufw allow 443/tcp
+ufw allow "$SSH_PORT/tcp" comment "SSH"
+ufw allow 80/tcp           comment "HTTP"
+ufw allow 443/tcp          comment "HTTPS"
+ufw deny 3000/tcp          comment "Block frontend direct"
+ufw deny 3001/tcp          comment "Block backend direct"
+ufw deny 3306/tcp          comment "Block MySQL direct"
 ufw --force enable
-ufw status
+ok "UFW configuré (SSH:$SSH_PORT, 80, 443 — MySQL/backend bloqués)"
 
-echo "=== [3/8] SSH — désactivation des mots de passe ==="
-sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
-sed -i 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' /etc/ssh/sshd_config
-sed -i 's/^#\?Port .*/Port 2222/' /etc/ssh/sshd_config
-sed -i 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/^#\?UsePAM.*/UsePAM no/' /etc/ssh/sshd_config
-# Test de la config avant de redémarrer
-sshd -t && systemctl restart ssh
-echo "SSH sécurisé (port 2222, clé uniquement)"
+# ── 5. SSH Hardening ──────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [5/13] Durcissement SSH ===${NC}"
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak.$(date +%Y%m%d)
 
-echo "=== [4/8] Fail2ban ==="
-cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.conf.bak
-cat > /etc/fail2ban/jail.local << 'EOF'
+cat > /etc/ssh/sshd_config.d/99-hardening.conf << EOF
+Port $SSH_PORT
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+ChallengeResponseAuthentication no
+UsePAM no
+X11Forwarding no
+MaxAuthTries 2
+LoginGraceTime 20
+AllowUsers $APP_USER
+ClientAliveInterval 300
+ClientAliveCountMax 2
+EOF
+
+# Ubuntu 24+ utilise systemd socket activation — override du port dans le socket
+mkdir -p /etc/systemd/system/ssh.socket.d
+cat > /etc/systemd/system/ssh.socket.d/override.conf << EOF
+[Socket]
+ListenStream=
+ListenStream=0.0.0.0:$SSH_PORT
+ListenStream=[::]:$SSH_PORT
+EOF
+
+sshd -t && systemctl daemon-reload && systemctl restart ssh.socket && systemctl restart ssh
+ok "SSH durci (port $SSH_PORT, clé uniquement, AllowUsers $APP_USER)"
+echo ""
+warn "IMPORTANT : teste la connexion SSH dans un NOUVEAU terminal avant de continuer !"
+echo -e "${YELLOW}Commande à utiliser :${NC}"
+echo "  ssh -i ~/.ssh/id_ed25519 -p $SSH_PORT $APP_USER@$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')"
+echo ""
+read -p "Connexion SSH testée et fonctionnelle ? (o/n) : " SSH_OK
+[[ "$SSH_OK" != "o" && "$SSH_OK" != "O" ]] && err "Règle le problème SSH avant de continuer."
+echo ""
+warn "SÉCURITÉ : Supprime maintenant le port 22 dans le pare-feu IONOS !"
+echo "  → Panneau IONOS → Network → Firewall → supprimer la règle port 22"
+echo ""
+read -p "Port 22 supprimé dans IONOS ? (o/n) : " IONOS_OK
+[[ "$IONOS_OK" != "o" && "$IONOS_OK" != "O" ]] && warn "N'oublie pas de supprimer le port 22 dans IONOS !"
+
+# ── 6. Kernel Hardening ───────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [6/13] Kernel Hardening ===${NC}"
+cat > /etc/sysctl.d/99-hardening.conf << 'EOF'
+net.ipv4.tcp_syncookies = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv4.conf.all.log_martians = 1
+kernel.randomize_va_space = 2
+kernel.dmesg_restrict = 1
+kernel.kptr_restrict = 2
+fs.suid_dumpable = 0
+EOF
+sysctl -p /etc/sysctl.d/99-hardening.conf > /dev/null 2>&1
+ok "Kernel hardening appliqué"
+
+# ── 7. msmtp ─────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [7/13] msmtp (alertes email) ===${NC}"
+cat > /etc/msmtprc << EOF
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        /var/log/msmtp.log
+
+account        alert
+host           $SMTP_HOST
+port           $SMTP_PORT
+from           $SMTP_FROM
+user           $SMTP_FROM
+password       $SMTP_PASS
+
+account default : alert
+EOF
+chmod 600 /etc/msmtprc
+echo "Test alerte msmtp — setup.sh VPS $(date)" | msmtp "$ALERT_EMAIL" 2>/dev/null \
+  && ok "msmtp configuré — email test envoyé à $ALERT_EMAIL" \
+  || warn "msmtp configuré mais email test échoué — vérifie les identifiants SMTP"
+
+# ── 8. Fail2ban ───────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [8/13] Fail2ban ===${NC}"
+cat > /etc/fail2ban/jail.local << EOF
 [DEFAULT]
 bantime  = 30d
-findtime = 10m
+findtime = 5m
 maxretry = 3
 banaction = iptables-multiport
+destemail = $ALERT_EMAIL
+sendername = Fail2ban VPS
+mta = msmtp
+action = %(action_mwl)s
 
 [sshd]
 enabled  = true
-port     = 2222
+port     = $SSH_PORT
 filter   = sshd
 logpath  = /var/log/auth.log
-maxretry = 3
-bantime  = 30d
+maxretry = 2
+bantime  = -1
+findtime = 1h
 
 [nginx-http-auth]
 enabled  = true
@@ -56,64 +267,258 @@ bantime  = 30d
 enabled  = true
 filter   = nginx-botsearch
 logpath  = /var/log/nginx/access.log
-maxretry = 3
+maxretry = 2
 bantime  = 30d
+
+[nginx-limit-req]
+enabled  = true
+filter   = nginx-limit-req
+logpath  = /var/log/nginx/error.log
+maxretry = 5
+bantime  = 7d
 EOF
-systemctl enable fail2ban
-systemctl restart fail2ban
-echo "Fail2ban configuré (ban 30j, 3 tentatives)"
+systemctl enable fail2ban -q && systemctl restart fail2ban
+ok "Fail2ban configuré (SSH : ban permanent 2 tentatives, nginx : ban 30j, alertes → $ALERT_EMAIL)"
 
-echo "=== [5/8] CrowdSec ==="
-curl -fsSL https://install.crowdsec.net | sh
-apt install -y crowdsec-firewall-bouncer-iptables
-cscli collections install crowdsecurity/nginx
-cscli collections install crowdsecurity/sshd
-cscli collections install crowdsecurity/portscan
-systemctl enable crowdsec
-systemctl restart crowdsec
-echo "CrowdSec installé avec collections nginx + sshd + portscan"
+# ── 9. CrowdSec ───────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [9/13] CrowdSec ===${NC}"
+if ! command -v cscli &>/dev/null; then
+  curl -fsSL https://install.crowdsec.net | sh -s -- -y > /dev/null 2>&1
+fi
+apt install -y -qq crowdsec-firewall-bouncer-iptables 2>/dev/null || true
+cscli collections install crowdsecurity/nginx -q 2>/dev/null || true
+cscli collections install crowdsecurity/sshd -q 2>/dev/null || true
+cscli collections install crowdsecurity/portscan -q 2>/dev/null || true
+systemctl enable crowdsec -q && systemctl restart crowdsec
+ok "CrowdSec installé (nginx + sshd + portscan)"
 
-echo "=== [6/8] Node.js + PM2 ==="
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt install -y nodejs
-npm install -g pm2
-echo "Node.js $(node -v) et PM2 installés"
+# ── 10. MySQL ─────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [10/13] MySQL ===${NC}"
+apt install -y -qq mysql-server
 
-echo "=== [7/8] Nginx + Certbot ==="
-apt install -y nginx certbot python3-certbot-nginx
-# Désactiver la version Nginx dans les headers
-sed -i 's/^#\?\s*server_tokens.*/server_tokens off;/' /etc/nginx/nginx.conf
-systemctl enable nginx
-systemctl restart nginx
-echo "Nginx installé (server_tokens off)"
-echo "IMPORTANT : Lancer manuellement -> certbot --nginx -d mandev.fr"
+# Sécuriser MySQL (sans interaction)
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_ROOT_PASS';" 2>/dev/null || \
+mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$DB_ROOT_PASS';"
+mysql -u root -p"$DB_ROOT_PASS" -e "DELETE FROM mysql.user WHERE User='';"
+mysql -u root -p"$DB_ROOT_PASS" -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+mysql -u root -p"$DB_ROOT_PASS" -e "DROP DATABASE IF EXISTS test;"
+mysql -u root -p"$DB_ROOT_PASS" -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
 
-echo "=== [8/8] Patchs de sécurité automatiques ==="
-dpkg-reconfigure --priority=low unattended-upgrades
-echo "unattended-upgrades configuré"
+# Créer la base et l'utilisateur applicatif (droits limités à cette base uniquement)
+mysql -u root -p"$DB_ROOT_PASS" -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root -p"$DB_ROOT_PASS" -e "CREATE USER IF NOT EXISTS '${APP_USER}'@'localhost' IDENTIFIED BY '$DB_APP_PASS';"
+mysql -u root -p"$DB_ROOT_PASS" -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES ON \`$DB_NAME\`.* TO '${APP_USER}'@'localhost';"
+mysql -u root -p"$DB_ROOT_PASS" -e "FLUSH PRIVILEGES;"
 
+# Bloquer MySQL depuis l'extérieur (bind uniquement sur localhost)
+if ! grep -q "^bind-address" /etc/mysql/mysql.conf.d/mysqld.cnf 2>/dev/null; then
+  echo "bind-address = 127.0.0.1" >> /etc/mysql/mysql.conf.d/mysqld.cnf
+else
+  sed -i 's/^bind-address.*/bind-address = 127.0.0.1/' /etc/mysql/mysql.conf.d/mysqld.cnf
+fi
+systemctl restart mysql
+ok "MySQL configuré (base: $DB_NAME, root séparé du user $APP_USER, bind: localhost uniquement)"
+
+# ── 11. Node.js + PM2 + Nginx ─────────────────────────────────
+echo ""
+echo -e "${YELLOW}=== [11/13] Node.js + PM2 + Nginx ===${NC}"
+if ! command -v node &>/dev/null; then
+  curl -fsSL https://deb.nodesource.com/setup_20.x | bash - > /dev/null 2>&1
+  apt install -y -qq nodejs
+fi
+npm install -g pm2 -q
+env PATH=$PATH:/usr/bin pm2 startup systemd -u "$APP_USER" --hp "$USER_HOME" > /dev/null 2>&1 || true
+ok "Node.js $(node -v) et PM2 installés"
+
+apt install -y -qq nginx certbot python3-certbot-nginx
+
+cat > /etc/nginx/conf.d/security.conf << 'EOF'
+server_tokens off;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+map $http_user_agent $blocked_agent {
+  default           0;
+  ~*masscan         1;
+  ~*zgrab           1;
+  ~*nikto           1;
+  ~*sqlmap          1;
+  ~*nmap            1;
+  ~*python-requests 1;
+  ~*go-http-client  1;
+}
+EOF
+
+# Config HTTP uniquement — Certbot ajoutera le bloc SSL automatiquement
+cat > /etc/nginx/sites-available/$DOMAIN << EOF
+server {
+    listen 80;
+    server_name $DOMAIN;
+
+    if (\$blocked_agent) { return 403; }
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+    }
+
+    location /api/ {
+        proxy_pass http://localhost:3001/;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    location ~ /\. { deny all; }
+    location ~ \.(env|git|sh|sql|bak)$ { deny all; }
+}
+EOF
+
+ln -sf /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl enable nginx -q && systemctl reload nginx
+ok "Nginx configuré pour $DOMAIN"
+
+info "Lancement Certbot SSL pour $DOMAIN..."
+certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ALERT_EMAIL" \
+  && ok "SSL Let's Encrypt configuré" \
+  || warn "Certbot échoué — relance manuellement : certbot --nginx -d $DOMAIN"
+
+# ── 12. Clé deploy GitHub + clone + .env + Prisma + PM2 ──────
+echo ""
+echo -e "${YELLOW}=== [12/13] Déploiement projet ===${NC}"
+
+mkdir -p /var/www
+chown "$APP_USER:$APP_USER" /var/www
+
+# Générer une clé SSH deploy pour l'accès GitHub
+DEPLOY_KEY="$USER_HOME/.ssh/github_deploy"
+sudo -u "$APP_USER" ssh-keygen -t ed25519 -C "deploy@$DOMAIN" -f "$DEPLOY_KEY" -N "" > /dev/null 2>&1
+DEPLOY_KEY_PUB=$(cat "$DEPLOY_KEY.pub")
+
+echo ""
+echo -e "${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${RED}║  ACTION REQUISE — Ajoute cette clé dans GitHub               ║${NC}"
+echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo "  Repo GitHub → Settings → Deploy keys → Add deploy key"
+echo "  Title : deploy@$DOMAIN"
+echo "  Key   : $DEPLOY_KEY_PUB"
+echo ""
+read -p "Clé ajoutée dans GitHub ? (o/n) : " KEY_OK
+[[ "$KEY_OK" != "o" && "$KEY_OK" != "O" ]] && err "Ajoute la clé deploy avant de continuer."
+
+# Configurer SSH pour utiliser la bonne clé avec GitHub
+sudo -u "$APP_USER" bash -c "cat >> $USER_HOME/.ssh/config << 'SSHCONF'
+Host github.com
+  IdentityFile $DEPLOY_KEY
+  IdentitiesOnly yes
+SSHCONF"
+chmod 600 "$USER_HOME/.ssh/config"
+
+# Tester la connexion GitHub
+sudo -u "$APP_USER" ssh -T git@github.com -o StrictHostKeyChecking=no 2>&1 | grep -q "successfully authenticated" \
+  && ok "Connexion GitHub vérifiée" \
+  || warn "Connexion GitHub non confirmée — continue quand même"
+
+# Cloner le repo
+info "Clone du repo $REPO_URL..."
+sudo -u "$APP_USER" git clone "$REPO_URL" /var/www/QCM-Patentino
+ok "Repo cloné dans /var/www/QCM-Patentino"
+
+# Créer le .env backend (encoder les caractères spéciaux du mot de passe pour l'URL)
+DB_APP_PASS_ENCODED=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${DB_APP_PASS}', safe=''))")
+cat > /var/www/QCM-Patentino/quiz-backend/.env << EOF
+NODE_ENV=production
+PORT=3001
+DATABASE_URL="mysql://${APP_USER}:${DB_APP_PASS_ENCODED}@localhost:3306/${DB_NAME}"
+JWT_SECRET=${JWT_SECRET}
+CORS_ORIGIN=https://${DOMAIN}
+EOF
+chmod 600 /var/www/QCM-Patentino/quiz-backend/.env
+chown "$APP_USER:$APP_USER" /var/www/QCM-Patentino/quiz-backend/.env
+ok ".env backend créé"
+
+# Installer les dépendances backend + créer les tables
+info "npm ci backend + prisma db push + seed..."
+sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-backend && npm ci --silent && npx prisma db push && npx prisma generate && npx prisma db seed && npm prune --omit=dev --silent"
+ok "Tables MySQL créées, client Prisma généré et données insérées"
+
+# Installer les dépendances frontend
+info "npm ci frontend..."
+sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-frontend && npm ci --legacy-peer-deps --silent && npm run build --silent"
+ok "Dépendances frontend installées"
+
+# Lancer PM2
+sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-frontend && pm2 start npm --name quiz-frontend -- start"
+sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-backend  && pm2 start npm --name quiz-backend  -- start"
+sudo -u "$APP_USER" pm2 save
+ok "PM2 lancé (quiz-frontend + quiz-backend)"
+
+# ── 13. Patchs auto + rkhunter + Lynis ───────────────────────
+echo ""
+echo -e "${YELLOW}=== [13/13] Patchs auto + audit final ===${NC}"
+
+cat > /etc/apt/apt.conf.d/50unattended-upgrades-custom << 'EOF'
+Unattended-Upgrade::Automatic-Reboot "false";
+Unattended-Upgrade::Mail "root";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+EOF
+systemctl enable unattended-upgrades -q
+ok "Patchs automatiques activés"
+
+info "Initialisation rkhunter..."
+rkhunter --update > /dev/null 2>&1 || true
+rkhunter --propupd > /dev/null 2>&1 || true
+echo "0 3 * * 0 root /usr/bin/rkhunter --check --skip-keypress --report-warnings-only | msmtp $ALERT_EMAIL" \
+  > /etc/cron.d/rkhunter-weekly
+ok "rkhunter configuré (scan hebdo → $ALERT_EMAIL)"
+
+info "Audit Lynis final (peut prendre 2 min)..."
+LYNIS_SCORE=$(lynis audit system --quiet 2>/dev/null | grep "Hardening index" | grep -oP '\d+' | head -1)
+if [ -n "$LYNIS_SCORE" ]; then
+  [ "$LYNIS_SCORE" -ge 80 ] \
+    && ok "Lynis score : $LYNIS_SCORE/100 — Objectif atteint !" \
+    || warn "Lynis score : $LYNIS_SCORE/100 — Objectif 80 non atteint"
+fi
+
+# ── Résumé final ──────────────────────────────────────────────
 echo ""
 echo "============================================================"
-echo " Installation terminée. Étapes suivantes :"
+echo -e "${GREEN} SETUP TERMINÉ — $(date '+%Y-%m-%d %H:%M')${NC}"
+echo "============================================================"
 echo ""
-echo " 1. Vérifier que ta clé SSH est dans ~/.ssh/authorized_keys"
-echo "    avant de te déconnecter !"
+echo "  Domaine     : https://$DOMAIN"
+echo "  Port SSH    : $SSH_PORT"
+echo "  User        : $APP_USER"
+echo "  Base MySQL  : $DB_NAME"
+echo "  Lynis score : ${LYNIS_SCORE:-inconnu}/100"
 echo ""
-echo " 2. Déployer le projet :"
-echo "    git clone git@github.com:mounir-mansi/QCM-Patentino.git /var/www/QCM-Patentino"
-echo "    chown -R deploy:deploy /var/www/QCM-Patentino"
+# Test API backend
+sleep 3
+API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/module)
+[ "$API_STATUS" = "200" ] \
+  && ok "API backend répond (HTTP 200)" \
+  || warn "API backend ne répond pas (HTTP $API_STATUS) — vérifie pm2 logs quiz-backend"
+
 echo ""
-echo " 3. Configurer Nginx (voir nginx-quiz.conf)"
-echo "    Puis : certbot --nginx -d mandev.fr"
-echo ""
-echo " 4. Créer le .env backend :"
-echo "    /var/www/QCM-Patentino/quiz-backend/.env"
-echo "    chmod 600 /var/www/QCM-Patentino/quiz-backend/.env"
-echo ""
-echo " 5. Lancer PM2 :"
-echo "    cd /var/www/QCM-Patentino/quiz-frontend && npm ci && npm run build"
-echo "    pm2 start npm --name quiz-frontend -- start"
-echo "    cd /var/www/QCM-Patentino/quiz-backend && npm ci"
-echo "    pm2 start npm --name quiz-backend -- start"
-echo "    pm2 save && pm2 startup"
+echo -e "${YELLOW}Vérifications :${NC}"
+echo "  su - $APP_USER -c 'pm2 status'"
+echo "  sudo fail2ban-client status"
+echo "  sudo ufw status"
+echo "  curl -s https://$DOMAIN | head -5"
 echo "============================================================"
