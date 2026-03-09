@@ -10,7 +10,7 @@ const Game = () => {
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [currentScoreData, setCurrentScoreData] = useState(0);
-  const { query, push } = useRouter();
+  const { push } = useRouter();
 
   useEffect(() => {
     const questionsData = localStorage.getItem("questions");
@@ -27,7 +27,7 @@ const Game = () => {
       return;
     }
     const url = `/api/answer/${selectedAnswerId}`;
-    const response = await fetch(url);
+    const response = await fetch(url, { credentials: "include" });
     const answer = await response.json();
     if (answer.result_answer === true) {
       setCurrentScoreData(currentScoreData + 1);
@@ -64,10 +64,6 @@ const Game = () => {
     } else {
       try {
         const finalScore = localStorage.getItem("currentScore");
-        let userId = localStorage.getItem("user");
-        if (userId) {
-          userId = JSON.parse(userId);
-        }
         const moduleData = localStorage.getItem("questions");
         let moduleId = null;
         let levelModule = "";
@@ -81,7 +77,6 @@ const Game = () => {
 
         const payload = {
           moduleId: moduleId,
-          userId: userId,
           finalScore: parseInt(finalScore ?? "0") / questions.length * 100,
           levelModule: levelModule,
           success: success,
@@ -93,6 +88,7 @@ const Game = () => {
               method: "post",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
+              credentials: "include",
             });
           } catch (e) {
             console.error(e);

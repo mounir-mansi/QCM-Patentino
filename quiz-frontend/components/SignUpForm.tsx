@@ -31,6 +31,7 @@ export default function SignUp() {
           firstname: firstName,
           lastname: lastName,
         }),
+        credentials: "include",
       });
 
       if (res.ok) {
