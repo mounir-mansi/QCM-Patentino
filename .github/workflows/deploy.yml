@@ -10,6 +10,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Build frontend sur GitHub Actions
+        run: |
+          cd quiz-frontend
+          npm ci --legacy-peer-deps
+          npm run build
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -24,16 +35,16 @@ jobs:
             quiz-backend/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/QCM-Patentino/quiz-backend/
 
-      - name: Sync frontend sources
+      - name: Sync frontend (sources + build)
         run: |
           rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -p 2222 -o StrictHostKeyChecking=no -o IdentitiesOnly=yes" \
-            --exclude='node_modules' --exclude='.next' \
+            --exclude='node_modules' \
             quiz-frontend/ \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/var/www/QCM-Patentino/quiz-frontend/
 
-      - name: Build et restart sur le serveur
+      - name: Install deps et restart sur le serveur
         run: |
           ssh -i ~/.ssh/id_ed25519 -p 2222 -o StrictHostKeyChecking=no -o IdentitiesOnly=yes \
             -o ServerAliveInterval=60 -o ServerAliveCountMax=10 \
             ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
-            "cd /var/www/QCM-Patentino/quiz-frontend && npm ci --legacy-peer-deps && npm run build && pm2 restart quiz-frontend && cd ../quiz-backend && npm ci && pm2 restart quiz-backend"
+            "cd /var/www/QCM-Patentino/quiz-frontend && npm ci --legacy-peer-deps --omit=dev && pm2 restart quiz-frontend && cd ../quiz-backend && npm ci && pm2 restart quiz-backend"
