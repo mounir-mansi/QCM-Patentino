@@ -80,6 +80,12 @@ read -p "Email destinataire alertes [ENTRÉE = même adresse] : " ALERT_EMAIL_IN
 ALERT_EMAIL="${ALERT_EMAIL_INPUT:-$SMTP_FROM}"
 read -s -p "Mot de passe email expéditeur : "                  SMTP_PASS
 echo ""
+echo ""
+echo -e "${YELLOW}=== Cloudflare Turnstile (CAPTCHA anti-bot) ===${NC}"
+echo "  → Créer un site sur https://dash.cloudflare.com > Turnstile"
+echo "  → Type : Invisible ou Managed"
+read -p "Turnstile Site Key  (NEXT_PUBLIC_TURNSTILE_SITE_KEY) : " TURNSTILE_SITE_KEY
+read -p "Turnstile Secret Key (TURNSTILE_SECRET_KEY) : "          TURNSTILE_SECRET_KEY
 
 echo ""
 info "Génération automatique des mots de passe forts (56 caractères)..."
@@ -513,10 +519,18 @@ PORT=3001
 DATABASE_URL="mysql://${APP_USER}:${DB_APP_PASS_ENCODED}@localhost:3306/${DB_NAME}"
 JWT_SECRET=${JWT_SECRET}
 CORS_ORIGIN=https://${DOMAIN}
+TURNSTILE_SECRET_KEY=${TURNSTILE_SECRET_KEY}
 EOF
 chmod 600 /var/www/QCM-Patentino/quiz-backend/.env
 chown "$APP_USER:$APP_USER" /var/www/QCM-Patentino/quiz-backend/.env
 ok ".env backend créé"
+
+cat > /var/www/QCM-Patentino/quiz-frontend/.env.local << EOF
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY}
+EOF
+chmod 600 /var/www/QCM-Patentino/quiz-frontend/.env.local
+chown "$APP_USER:$APP_USER" /var/www/QCM-Patentino/quiz-frontend/.env.local
+ok ".env.local frontend créé (Turnstile site key)"
 
 # Installer les dépendances backend + créer les tables
 info "npm ci backend + prisma db push + seed..."

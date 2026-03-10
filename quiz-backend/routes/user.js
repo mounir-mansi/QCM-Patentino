@@ -6,6 +6,24 @@ import { z } from "zod";
 import modelUser from "../prisma/CRUD/user.js";
 import authenticate from "../middleware/authenticateToken.js";
 
+async function verifyTurnstile(token) {
+  if (!token) return false;
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        secret: process.env.TURNSTILE_SECRET_KEY,
+        response: token,
+      }),
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
+
 const userRouter = express.Router();
 
 const authLimiter = rateLimit({
@@ -42,6 +60,10 @@ userRouter.get("/", authenticate, async (req, res) => {
 
 userRouter.post("/signup", authLimiter, async (req, res) => {
   try {
+    const turnstileOk = await verifyTurnstile(req.body["cf-turnstile-response"]);
+    if (!turnstileOk) {
+      return res.status(400).json({ message: "Vérification CAPTCHA échouée." });
+    }
     const validated = signupSchema.safeParse(req.body);
     if (!validated.success) {
       return res
@@ -64,6 +86,10 @@ userRouter.post("/signup", authLimiter, async (req, res) => {
 
 userRouter.post("/login", authLimiter, async (req, res) => {
   try {
+    const turnstileOk = await verifyTurnstile(req.body["cf-turnstile-response"]);
+    if (!turnstileOk) {
+      return res.status(400).json({ message: "Vérification CAPTCHA échouée." });
+    }
     const validated = loginSchema.safeParse(req.body);
     if (!validated.success) {
       return res
