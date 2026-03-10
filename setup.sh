@@ -174,7 +174,7 @@ echo ""
 echo -e "${YELLOW}=== [3/13] Mise à jour système ===${NC}"
 apt update -qq && apt upgrade -y -qq
 apt install -y -qq curl git ufw fail2ban unattended-upgrades logrotate \
-  gnupg2 msmtp msmtp-mta rkhunter lynis
+  gnupg2 msmtp msmtp-mta rkhunter lynis clamav clamav-freshclam auditd audispd-plugins
 ok "Système à jour"
 
 # ── 4. Firewall UFW ───────────────────────────────────────────
@@ -189,6 +189,12 @@ ufw allow 443/tcp          comment "HTTPS"
 ufw deny 3000/tcp          comment "Block frontend direct"
 ufw deny 3001/tcp          comment "Block backend direct"
 ufw deny 3306/tcp          comment "Block MySQL direct"
+ufw deny out 3333          comment "Block mining pool"
+ufw deny out 4444          comment "Block mining pool"
+ufw deny out 14444         comment "Block mining pool"
+ufw deny out 45560         comment "Block mining pool"
+ufw deny out 3032          comment "Block mining pool"
+ufw deny out 7777          comment "Block mining pool"
 ufw --force enable
 ok "UFW configuré (SSH:$SSH_PORT, 80, 443 — MySQL/backend bloqués)"
 
@@ -396,6 +402,7 @@ add_header X-Content-Type-Options "nosniff" always;
 add_header X-XSS-Protection "1; mode=block" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com; font-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self';" always;
 
 map $http_user_agent $blocked_agent {
   default           0;
@@ -547,6 +554,103 @@ rkhunter --propupd > /dev/null 2>&1 || true
 echo "0 3 * * 0 root /usr/bin/rkhunter --check --skip-keypress --report-warnings-only | msmtp $ALERT_EMAIL" \
   > /etc/cron.d/rkhunter-weekly
 ok "rkhunter configuré (scan hebdo → $ALERT_EMAIL)"
+
+# ── Anti-cryptomining ─────────────────────────────────────────
+info "Configuration anti-cryptomining..."
+
+# /etc/hosts blackhole — domaines de mining connus
+cat >> /etc/hosts << 'EOF'
+
+# Blackhole mining pools
+0.0.0.0 pool.minexmr.com
+0.0.0.0 xmr.pool.minergate.com
+0.0.0.0 xmr-eu1.nanopool.org
+0.0.0.0 xmr-eu2.nanopool.org
+0.0.0.0 xmr-us-east1.nanopool.org
+0.0.0.0 mine.c3pool.com
+0.0.0.0 rx.unmineable.com
+0.0.0.0 stratum.slushpool.com
+0.0.0.0 btc.f2pool.com
+0.0.0.0 eth.f2pool.com
+0.0.0.0 xmr.f2pool.com
+0.0.0.0 mining.doge.pool.mn
+EOF
+ok "Blackhole DNS mining pools configuré (/etc/hosts)"
+
+# Script de détection/réaction anti-mining
+cat > /usr/local/bin/anti-mining-check.sh << SCRIPT
+#!/bin/bash
+ALERT_EMAIL="$ALERT_EMAIL"
+LOG="/var/log/anti-mining.log"
+CPU_COUNTER="/tmp/.cpu_high_count"
+HOST=\$(hostname)
+
+send_alert() {
+  printf "Subject: [ALERTE VPS \$HOST] \$1\n\n\$2\n\nDate: \$(date)\nServeur: \$HOST" | msmtp "\$ALERT_EMAIL" 2>/dev/null || true
+  echo "\$(date '+%Y-%m-%d %H:%M:%S') ALERTE: \$1" >> "\$LOG"
+}
+
+# 1. Processus de mining connus — kill immédiat
+MINING_PROCS="xmrig|kinsing|minerd|cpuminer|cryptonight|xmr-stak|nbminer|t-rex|phoenixminer|lolminer|teamredminer|ethminer"
+FOUND=\$(ps aux | grep -E "\$MINING_PROCS" | grep -v grep)
+if [ -n "\$FOUND" ]; then
+  PIDS=\$(echo "\$FOUND" | awk '{print \$2}' | tr '\n' ' ')
+  NAMES=\$(echo "\$FOUND" | awk '{print \$11}' | tr '\n' ', ')
+  kill -9 \$PIDS 2>/dev/null || true
+  send_alert "MINER DÉTECTÉ ET TUÉS — \$NAMES" "Processus suspects tués automatiquement:\n\$FOUND\nPIDs: \$PIDS"
+fi
+
+# 2. Connexions sortantes vers ports de mining
+MINING_PORTS="3333|4444|14444|45560|3032|7777|8888|9999"
+MINING_CONNS=\$(ss -tnp 2>/dev/null | grep -E ":\b(\$MINING_PORTS)\b" | grep -v "127.0.0.1")
+if [ -n "\$MINING_CONNS" ]; then
+  PIDS=\$(echo "\$MINING_CONNS" | grep -oP 'pid=\K[0-9]+' | sort -u)
+  for PID in \$PIDS; do
+    PROC=\$(ps -p \$PID -o comm= 2>/dev/null || echo "inconnu")
+    kill -9 \$PID 2>/dev/null || true
+    send_alert "CONNEXION MINING BLOQUÉE — \$PROC" "Connexion sortante vers port mining:\n\$MINING_CONNS\nProcessus tué: \$PROC (PID \$PID)"
+  done
+fi
+
+# 3. CPU élevé — compteur sur 3 cycles (15 min) avant alerte
+CPU=\$(top -bn1 | grep -E "^%?Cpu|^Cpu" | head -1 | awk -F'[:,]' '{for(i=1;i<=NF;i++) if(\$i ~ /us/) {gsub(/ /,"",\$(i-1)); print int(\$(i-1)); exit}}')
+CPU=\${CPU:-0}
+if [ "\$CPU" -ge 80 ] 2>/dev/null; then
+  COUNT=\$(cat "\$CPU_COUNTER" 2>/dev/null || echo "0")
+  COUNT=\$((COUNT + 1))
+  echo "\$COUNT" > "\$CPU_COUNTER"
+  if [ "\$COUNT" -ge 3 ]; then
+    TOP_PROCS=\$(ps aux --sort=-%cpu | head -6 | tail -5)
+    send_alert "CPU ÉLEVÉ — \${CPU}% depuis \$((COUNT * 5)) min" "CPU à \${CPU}% depuis \$((COUNT * 5)) minutes.\n\nTop processus:\n\$TOP_PROCS"
+    echo "0" > "\$CPU_COUNTER"
+  fi
+else
+  echo "0" > "\$CPU_COUNTER"
+fi
+SCRIPT
+
+chmod +x /usr/local/bin/anti-mining-check.sh
+echo "*/5 * * * * root /usr/local/bin/anti-mining-check.sh" > /etc/cron.d/anti-mining
+ok "Script anti-mining configuré (cron toutes les 5 min, kill auto + alertes)"
+
+# auditd — tracer toute création de processus suspect
+cat > /etc/audit/rules.d/anti-mining.rules << 'EOF'
+-a always,exit -F arch=b64 -S execve -F exe=/usr/bin/xmrig -k mining
+-a always,exit -F arch=b64 -S execve -F exe=/tmp/xmrig -k mining
+-w /tmp -p x -k tmp_exec
+-w /var/tmp -p x -k tmp_exec
+-w /dev/shm -p x -k shm_exec
+EOF
+systemctl enable auditd -q && systemctl restart auditd 2>/dev/null || true
+ok "auditd configuré (surveillance exécution dans /tmp, /var/tmp, /dev/shm)"
+
+# ClamAV — mise à jour base + scan quotidien
+systemctl stop clamav-freshclam 2>/dev/null || true
+freshclam --quiet 2>/dev/null || true
+systemctl enable clamav-freshclam -q 2>/dev/null || true
+systemctl start clamav-freshclam 2>/dev/null || true
+echo "0 2 * * * root clamscan -r /var/www /tmp /var/tmp --quiet --infected --log=/var/log/clamav-scan.log && [ -s /var/log/clamav-scan.log ] && cat /var/log/clamav-scan.log | msmtp $ALERT_EMAIL" > /etc/cron.d/clamav-daily
+ok "ClamAV configuré (scan quotidien /var/www + /tmp → alerte si infection)"
 
 info "Audit Lynis final (peut prendre 2 min)..."
 LYNIS_SCORE=$(lynis audit system --quiet 2>/dev/null | grep "Hardening index" | grep -oP '\d+' | head -1)
