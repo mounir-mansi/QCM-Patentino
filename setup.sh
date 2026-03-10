@@ -16,6 +16,47 @@ info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 err()  { echo -e "${RED}[ERREUR]${NC} $1"; exit 1; }
 
+WARNINGS_FINAL=()
+add_warning() { WARNINGS_FINAL+=("$1"); }
+
+npm_audit_check() {
+  local DIR=$1
+  local FIX_FLAGS=${2:-""}
+  local LABEL=${3:-"$DIR"}
+  info "npm audit : $LABEL..."
+  AUDIT_JSON=$(sudo -u "$APP_USER" bash -c "cd $DIR && npm audit --json 2>/dev/null" || echo "{}")
+  TOTAL=$(echo "$AUDIT_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('metadata',{}).get('vulnerabilities',{}).get('total',0))" 2>/dev/null || echo "0")
+  HIGH=$(echo "$AUDIT_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); v=d.get('metadata',{}).get('vulnerabilities',{}); print(v.get('high',0)+v.get('critical',0))" 2>/dev/null || echo "0")
+  if [ "$TOTAL" = "0" ]; then
+    ok "npm audit $LABEL : aucune vulnérabilité"
+    return
+  fi
+  if [ "$HIGH" -gt "0" ]; then
+    warn "npm audit $LABEL : $TOTAL vulnérabilités dont $HIGH HIGH/CRITICAL — tentative de fix automatique..."
+    sudo -u "$APP_USER" bash -c "cd $DIR && npm audit fix $FIX_FLAGS --silent" 2>/dev/null || true
+    AUDIT2=$(sudo -u "$APP_USER" bash -c "cd $DIR && npm audit --json 2>/dev/null" || echo "{}")
+    HIGH2=$(echo "$AUDIT2" | python3 -c "import sys,json; d=json.load(sys.stdin); v=d.get('metadata',{}).get('vulnerabilities',{}); print(v.get('high',0)+v.get('critical',0))" 2>/dev/null || echo "?")
+    TOTAL2=$(echo "$AUDIT2" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('metadata',{}).get('vulnerabilities',{}).get('total',0))" 2>/dev/null || echo "?")
+    if [ "$HIGH2" = "0" ]; then
+      ok "npm audit fix $LABEL appliqué — plus de HIGH/CRITICAL (reste $TOTAL2 LOW/MODERATE)"
+    else
+      warn "npm audit $LABEL : $HIGH2 HIGH/CRITICAL non corrigées après fix"
+      add_warning "npm audit $LABEL : $HIGH2 vulnérabilités HIGH/CRITICAL non corrigées — à traiter impérativement"
+    fi
+  else
+    warn "npm audit $LABEL : $TOTAL vulnérabilités LOW/MODERATE (aucun HIGH/CRITICAL)"
+  fi
+}
+
+check_service() {
+  local SVC=$1
+  local LABEL=${2:-$SVC}
+  if ! systemctl is-active --quiet "$SVC"; then
+    warn "$LABEL : service inactif après installation"
+    add_warning "$LABEL : service inactif — relance : systemctl restart $SVC"
+  fi
+}
+
 [ "$EUID" -ne 0 ] && err "Lance ce script en root : sudo bash setup.sh"
 
 echo ""
@@ -32,10 +73,11 @@ read -p "Port SSH personnalisé (ex: 2222) : "                 SSH_PORT
 read -p "Nom du user applicatif (ex: deploy) : "              APP_USER
 read -p "Nom de la base de données MySQL : "                   DB_NAME
 read -p "URL SSH du repo GitHub (ex: git@github.com:user/repo.git) : " REPO_URL
-read -p "Email pour les alertes Fail2ban : "                   ALERT_EMAIL
 read -p "Serveur SMTP (ex: smtp.gmail.com) : "                 SMTP_HOST
 read -p "Port SMTP (ex: 587) : "                               SMTP_PORT
 read -p "Adresse email expéditeur : "                          SMTP_FROM
+read -p "Email destinataire alertes [ENTRÉE = même adresse] : " ALERT_EMAIL_INPUT
+ALERT_EMAIL="${ALERT_EMAIL_INPUT:-$SMTP_FROM}"
 read -s -p "Mot de passe email expéditeur : "                  SMTP_PASS
 echo ""
 
@@ -107,6 +149,13 @@ if ! id "$APP_USER" &>/dev/null; then
 fi
 echo "$APP_USER:$DEPLOY_PASS" | chpasswd
 ok "Mot de passe $APP_USER changé"
+
+# Droits sudo limités au monitoring pour APP_USER
+cat > /etc/sudoers.d/$APP_USER-monitoring << EOF
+$APP_USER ALL=(ALL) NOPASSWD: /usr/bin/fail2ban-client status, /usr/bin/fail2ban-client status *, /usr/sbin/ufw status, /bin/systemctl status *
+EOF
+chmod 440 /etc/sudoers.d/$APP_USER-monitoring
+ok "Droits sudo monitoring configurés pour $APP_USER"
 
 # ── 2. Clé SSH ────────────────────────────────────────────────
 echo ""
@@ -230,9 +279,12 @@ password       $SMTP_PASS
 account default : alert
 EOF
 chmod 600 /etc/msmtprc
-echo "Test alerte msmtp — setup.sh VPS $(date)" | msmtp "$ALERT_EMAIL" 2>/dev/null \
-  && ok "msmtp configuré — email test envoyé à $ALERT_EMAIL" \
-  || warn "msmtp configuré mais email test échoué — vérifie les identifiants SMTP"
+if echo "Test alerte msmtp — setup.sh VPS $(date)" | msmtp "$ALERT_EMAIL" 2>/dev/null; then
+  ok "msmtp configuré — email test envoyé à $ALERT_EMAIL"
+else
+  warn "msmtp : email test échoué — vérifie les identifiants SMTP"
+  add_warning "msmtp : email test échoué — vérifie SMTP_HOST=$SMTP_HOST, identifiants et mot de passe"
+fi
 
 # ── 8. Fail2ban ───────────────────────────────────────────────
 echo ""
@@ -278,6 +330,7 @@ maxretry = 5
 bantime  = 7d
 EOF
 systemctl enable fail2ban -q && systemctl restart fail2ban
+check_service fail2ban "Fail2ban"
 ok "Fail2ban configuré (SSH : ban permanent 2 tentatives, nginx : ban 30j, alertes → $ALERT_EMAIL)"
 
 # ── 9. CrowdSec ───────────────────────────────────────────────
@@ -291,6 +344,7 @@ cscli collections install crowdsecurity/nginx -q 2>/dev/null || true
 cscli collections install crowdsecurity/sshd -q 2>/dev/null || true
 cscli collections install crowdsecurity/portscan -q 2>/dev/null || true
 systemctl enable crowdsec -q && systemctl restart crowdsec
+check_service crowdsec "CrowdSec"
 ok "CrowdSec installé (nginx + sshd + portscan)"
 
 # ── 10. MySQL ─────────────────────────────────────────────────
@@ -319,6 +373,7 @@ else
   sed -i 's/^bind-address.*/bind-address = 127.0.0.1/' /etc/mysql/mysql.conf.d/mysqld.cnf
 fi
 systemctl restart mysql
+check_service mysql "MySQL"
 ok "MySQL configuré (base: $DB_NAME, root séparé du user $APP_USER, bind: localhost uniquement)"
 
 # ── 11. Node.js + PM2 + Nginx ─────────────────────────────────
@@ -394,9 +449,12 @@ nginx -t && systemctl enable nginx -q && systemctl reload nginx
 ok "Nginx configuré pour $DOMAIN"
 
 info "Lancement Certbot SSL pour $DOMAIN..."
-certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ALERT_EMAIL" \
-  && ok "SSL Let's Encrypt configuré" \
-  || warn "Certbot échoué — relance manuellement : certbot --nginx -d $DOMAIN"
+if certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ALERT_EMAIL"; then
+  ok "SSL Let's Encrypt configuré"
+else
+  warn "Certbot échoué — relance manuellement : certbot --nginx -d $DOMAIN"
+  add_warning "SSL : Certbot échoué — relance : certbot --nginx -d $DOMAIN (vérifie que le DNS pointe bien vers ce serveur)"
+fi
 
 # ── 12. Clé deploy GitHub + clone + .env + Prisma + PM2 ──────
 echo ""
@@ -457,11 +515,13 @@ ok ".env backend créé"
 info "npm ci backend + prisma db push + seed..."
 sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-backend && npm ci --silent && npx prisma db push && npx prisma generate && npx prisma db seed && npm prune --omit=dev --silent"
 ok "Tables MySQL créées, client Prisma généré et données insérées"
+npm_audit_check "/var/www/QCM-Patentino/quiz-backend" "" "quiz-backend"
 
 # Installer les dépendances frontend
 info "npm ci frontend..."
 sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-frontend && npm ci --legacy-peer-deps --silent && npm run build --silent"
 ok "Dépendances frontend installées"
+npm_audit_check "/var/www/QCM-Patentino/quiz-frontend" "--legacy-peer-deps" "quiz-frontend"
 
 # Lancer PM2
 sudo -u "$APP_USER" bash -c "cd /var/www/QCM-Patentino/quiz-frontend && pm2 start npm --name quiz-frontend -- start"
@@ -496,25 +556,58 @@ if [ -n "$LYNIS_SCORE" ]; then
     || warn "Lynis score : $LYNIS_SCORE/100 — Objectif 80 non atteint"
 fi
 
+# Test API backend
+sleep 3
+API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/module)
+if [ "$API_STATUS" = "200" ]; then
+  ok "API backend répond (HTTP 200)"
+else
+  warn "API backend ne répond pas (HTTP $API_STATUS)"
+  add_warning "PM2 quiz-backend : API ne répond pas (HTTP $API_STATUS) — vérifie : su - $APP_USER -c 'pm2 logs quiz-backend'"
+fi
+
+FRONT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)
+if [ "$FRONT_STATUS" = "200" ]; then
+  ok "Frontend répond (HTTP 200)"
+else
+  warn "Frontend ne répond pas (HTTP $FRONT_STATUS)"
+  add_warning "PM2 quiz-frontend : ne répond pas (HTTP $FRONT_STATUS) — vérifie : su - $APP_USER -c 'pm2 logs quiz-frontend'"
+fi
+
 # ── Résumé final ──────────────────────────────────────────────
 echo ""
 echo "============================================================"
-echo -e "${GREEN} SETUP TERMINÉ — $(date '+%Y-%m-%d %H:%M')${NC}"
-echo "============================================================"
+if [ "${#WARNINGS_FINAL[@]}" -eq 0 ]; then
+  echo -e "${GREEN} SETUP TERMINÉ — installation propre — $(date '+%Y-%m-%d %H:%M')${NC}"
+  echo "============================================================"
+  echo ""
+  echo -e "${GREEN}  Aucune action requise.${NC}"
+else
+  echo -e "${RED} SETUP TERMINÉ AVEC AVERTISSEMENTS — $(date '+%Y-%m-%d %H:%M')${NC}"
+  echo "============================================================"
+  echo ""
+  echo -e "${RED}╔══════════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${RED}║  ACTIONS REQUISES — À TRAITER IMPÉRATIVEMENT                ║${NC}"
+  echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${NC}"
+  for w in "${WARNINGS_FINAL[@]}"; do
+    echo -e "${RED}  ⚠ $w${NC}"
+  done
+fi
 echo ""
 echo "  Domaine     : https://$DOMAIN"
 echo "  Port SSH    : $SSH_PORT"
 echo "  User        : $APP_USER"
 echo "  Base MySQL  : $DB_NAME"
-echo "  Lynis score : ${LYNIS_SCORE:-inconnu}/100"
-echo ""
-# Test API backend
-sleep 3
-API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/module)
-[ "$API_STATUS" = "200" ] \
-  && ok "API backend répond (HTTP 200)" \
-  || warn "API backend ne répond pas (HTTP $API_STATUS) — vérifie pm2 logs quiz-backend"
-
+if [ -n "$LYNIS_SCORE" ]; then
+  if [ "$LYNIS_SCORE" -ge 80 ]; then
+    echo -e "  Lynis score : ${GREEN}$LYNIS_SCORE/100 — objectif atteint${NC}"
+  else
+    echo -e "  Lynis score : ${RED}$LYNIS_SCORE/100 — objectif 80 non atteint${NC}"
+    add_warning "Lynis score : $LYNIS_SCORE/100 — audit : lynis audit system --quick"
+  fi
+else
+  echo    "  Lynis score : inconnu"
+fi
 echo ""
 echo -e "${YELLOW}Vérifications :${NC}"
 echo "  su - $APP_USER -c 'pm2 status'"
