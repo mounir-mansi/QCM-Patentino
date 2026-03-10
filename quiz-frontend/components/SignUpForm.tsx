@@ -1,23 +1,29 @@
 'use client';
 
 import { Button, Label, TextInput } from "flowbite-react";
-import { useRouter } from "next/navigation"; // ✅ App Router
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function SignUp() {
-  const router = useRouter(); // ✅ hook, pas un import direct
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
       setErrorMessage("Les mots de passe ne correspondent pas.");
+      return;
+    }
+    if (!turnstileToken) {
+      setErrorMessage("Vérification CAPTCHA en cours, réessayez.");
       return;
     }
 
@@ -30,6 +36,7 @@ export default function SignUp() {
           password,
           firstname: firstName,
           lastname: lastName,
+          "cf-turnstile-response": turnstileToken,
         }),
         credentials: "include",
       });
@@ -116,10 +123,13 @@ export default function SignUp() {
           shadow
           type="password"
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)} // ✅ était non contrôlé
+          onChange={(e) => setConfirmPassword(e.target.value)}
         />
       </div>
-
+      <Turnstile
+        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+        onSuccess={(token) => setTurnstileToken(token)}
+      />
       {errorMessage && (
         <p className="text-red-500 text-sm">{errorMessage}</p>
       )}

@@ -3,12 +3,14 @@ import { Label, TextInput, Button, Checkbox, Alert } from "flowbite-react";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { HiInformationCircle } from 'react-icons/hi';
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export default function LogIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [logoutMessage, setLogoutMessage] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -21,11 +23,15 @@ export default function LogIn() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!turnstileToken) {
+      setErrorMessage("Vérification CAPTCHA en cours, réessayez.");
+      return;
+    }
     try {
       const res = await fetch("/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, "cf-turnstile-response": turnstileToken }),
         credentials: "include",
       });
       const { message, user, email: usermail, firstname, lastname } = await res.json();
@@ -81,6 +87,10 @@ export default function LogIn() {
         <Checkbox id="remember" />
         <Label htmlFor="remember">Remember me</Label>
       </div>
+      <Turnstile
+        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+        onSuccess={(token) => setTurnstileToken(token)}
+      />
       {errorMessage && (
         <Alert color="failure" icon={HiInformationCircle}>
           <p>{errorMessage}</p>
