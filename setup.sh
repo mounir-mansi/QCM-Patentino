@@ -88,6 +88,21 @@ read -p "Turnstile Site Key  (NEXT_PUBLIC_TURNSTILE_SITE_KEY) : " TURNSTILE_SITE
 read -p "Turnstile Secret Key (TURNSTILE_SECRET_KEY) : "          TURNSTILE_SECRET_KEY
 
 echo ""
+echo -e "${YELLOW}=== Cloudflare Origin Certificate (SSL 15 ans) ===${NC}"
+echo "  → dash.cloudflare.com > $DOMAIN > SSL/TLS > Origin Server > Create Certificate"
+echo "  → Key type : RSA (2048) | Hostnames : $DOMAIN *.$DOMAIN | Validity : 15 years"
+echo "  → Clique Create, copie les deux blocs ci-dessous"
+echo ""
+echo -e "${BLUE}[INFO]${NC} Colle le certificat (Origin Certificate) puis appuie sur Ctrl+D :"
+mkdir -p /etc/ssl/cloudflare
+cat > /etc/ssl/cloudflare/cert.pem
+echo -e "${BLUE}[INFO]${NC} Colle la clé privée (Private Key) puis appuie sur Ctrl+D :"
+cat > /etc/ssl/cloudflare/key.pem
+chmod 644 /etc/ssl/cloudflare/cert.pem
+chmod 600 /etc/ssl/cloudflare/key.pem
+ok "Certificat Cloudflare Origin sauvegardé"
+
+echo ""
 info "Génération automatique des mots de passe forts (56 caractères)..."
 GEN_PASS() { openssl rand -base64 42; }
 ROOT_PASS=$(GEN_PASS)
@@ -243,11 +258,8 @@ echo ""
 read -p "Connexion SSH testée et fonctionnelle ? (o/n) : " SSH_OK
 [[ "$SSH_OK" != "o" && "$SSH_OK" != "O" ]] && err "Règle le problème SSH avant de continuer."
 echo ""
-warn "SÉCURITÉ : Supprime maintenant le port 22 dans le pare-feu IONOS !"
-echo "  → Panneau IONOS → Network → Firewall → supprimer la règle port 22"
-echo ""
-read -p "Port 22 supprimé dans IONOS ? (o/n) : " IONOS_OK
-[[ "$IONOS_OK" != "o" && "$IONOS_OK" != "O" ]] && warn "N'oublie pas de supprimer le port 22 dans IONOS !"
+warn "Pense à supprimer le port 22 dans le pare-feu IONOS dès que SSH sur port $SSH_PORT est confirmé !"
+add_warning "IONOS pare-feu : supprimer la règle port 22 (garder seulement port $SSH_PORT)"
 
 # ── 6. Kernel Hardening ───────────────────────────────────────
 echo ""
@@ -293,6 +305,8 @@ EOF
 chmod 600 /etc/msmtprc
 if echo "Test alerte msmtp — setup.sh VPS $(date)" | msmtp "$ALERT_EMAIL" 2>/dev/null; then
   ok "msmtp configuré — email test envoyé à $ALERT_EMAIL"
+  read -p "  As-tu reçu l'email de test sur $ALERT_EMAIL ? (o/n) : " MAIL_OK
+  [[ "$MAIL_OK" != "o" && "$MAIL_OK" != "O" ]] && add_warning "msmtp : email test non confirmé — vérifie spam, SMTP_HOST=$SMTP_HOST, mot de passe"
 else
   warn "msmtp : email test échoué — vérifie les identifiants SMTP"
   add_warning "msmtp : email test échoué — vérifie SMTP_HOST=$SMTP_HOST, identifiants et mot de passe"
@@ -399,7 +413,9 @@ npm install -g pm2 -q
 env PATH=$PATH:/usr/bin pm2 startup systemd -u "$APP_USER" --hp "$USER_HOME" > /dev/null 2>&1 || true
 ok "Node.js $(node -v) et PM2 installés"
 
-apt install -y -qq nginx certbot python3-certbot-nginx
+apt install -y -qq nginx
+
+ok "Certificat Cloudflare Origin déjà installé (saisi au début du setup)"
 
 cat > /etc/nginx/conf.d/security.conf << 'EOF'
 server_tokens off;
@@ -408,7 +424,7 @@ add_header X-Content-Type-Options "nosniff" always;
 add_header X-XSS-Protection "1; mode=block" always;
 add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com; font-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self';" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com; font-src 'self' data:; connect-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self';" always;
 
 map $http_user_agent $blocked_agent {
   default           0;
@@ -422,11 +438,21 @@ map $http_user_agent $blocked_agent {
 }
 EOF
 
-# Config HTTP uniquement — Certbot ajoutera le bloc SSL automatiquement
 cat > /etc/nginx/sites-available/$DOMAIN << EOF
 server {
     listen 80;
     server_name $DOMAIN;
+    return 301 https://\$host\$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name $DOMAIN;
+
+    ssl_certificate     /etc/ssl/cloudflare/cert.pem;
+    ssl_certificate_key /etc/ssl/cloudflare/key.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
 
     if (\$blocked_agent) { return 403; }
 
@@ -459,15 +485,7 @@ EOF
 ln -sf /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl enable nginx -q && systemctl reload nginx
-ok "Nginx configuré pour $DOMAIN"
-
-info "Lancement Certbot SSL pour $DOMAIN..."
-if certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos -m "$ALERT_EMAIL"; then
-  ok "SSL Let's Encrypt configuré"
-else
-  warn "Certbot échoué — relance manuellement : certbot --nginx -d $DOMAIN"
-  add_warning "SSL : Certbot échoué — relance : certbot --nginx -d $DOMAIN (vérifie que le DNS pointe bien vers ce serveur)"
-fi
+ok "Nginx configuré pour $DOMAIN (SSL Cloudflare Origin)"
 
 # ── 12. Clé deploy GitHub + clone + .env + Prisma + PM2 ──────
 echo ""
@@ -732,4 +750,32 @@ echo "  su - $APP_USER -c 'pm2 status'"
 echo "  sudo fail2ban-client status"
 echo "  sudo ufw status"
 echo "  curl -s https://$DOMAIN | head -5"
+echo "============================================================"
+echo ""
+echo -e "${YELLOW}╔══════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${YELLOW}║  ACTIONS POST-DÉPLOIEMENT (à faire manuellement)            ║${NC}"
+echo -e "${YELLOW}╚══════════════════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "${YELLOW}1. IONOS — Pare-feu réseau :${NC}"
+echo "   → Ouvrir TCP 80  (HTTP  — requis pour Cloudflare proxy)"
+echo "   → Ouvrir TCP 443 (HTTPS — requis pour Cloudflare proxy)"
+echo "   → Supprimer la règle port 22 (si pas encore fait)"
+echo "   → Garder seulement : port $SSH_PORT"
+echo ""
+echo -e "${YELLOW}2. Cloudflare — DNS :${NC}"
+echo "   → dash.cloudflare.com > $DOMAIN > DNS"
+echo "   → Ajouter enregistrement A : nom = qcm  cible = IP_DU_VPS  Proxied (orange)"
+echo "   → (ou nom = @ pour la racine $DOMAIN)"
+echo ""
+echo -e "${YELLOW}3. Cloudflare — SSL/TLS :${NC}"
+echo "   → dash.cloudflare.com > $DOMAIN > SSL/TLS > Overview"
+echo "   → Mode : Full (strict)"
+echo ""
+echo -e "${YELLOW}4. Cloudflare — Turnstile (CAPTCHA) :${NC}"
+echo "   → dash.cloudflare.com > Turnstile > sélectionner le widget"
+echo "   → Ajouter les hostnames : $DOMAIN  et  qcm.$DOMAIN"
+echo ""
+echo -e "${GREEN}5. Cloudflare — Origin Certificate :${NC}"
+echo "   ✓ Saisi au début du setup — /etc/ssl/cloudflare/cert.pem et key.pem"
+echo ""
 echo "============================================================"
