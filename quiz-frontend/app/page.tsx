@@ -15,13 +15,13 @@ export default function Home() {
           <div className="flex flex-col items-center px-4">
           <Title title="Welcome to the Quizine" />
 
-            <div className="w-full max-w-6xl mb-6 h-[calc(100vh-220px)] rounded-2xl overflow-hidden shadow-xl flex flex-col">
+            <div className="w-full max-w-6xl mb-6 h-[calc(100vh-235px)] rounded-2xl overflow-hidden shadow-xl flex flex-col bg-[#fdf6e3]">
               {/* Image — 60% de la hauteur */}
               <div
                 className="flex-[3] bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-[size:100%_auto] bg-top bg-no-repeat"
               />
-              {/* Texte — chevauchement sur l'image */}
-              <div className="flex-[2] bg-white text-[#DC3C35] px-5 pt-6 pb-4 -mt-8 rounded-t-2xl relative z-10 flex flex-col justify-center">
+              {/* Texte — sans espace avec l'image */}
+              <div className="flex-[2] bg-[#fdf6e3] text-[#DC3C35] px-5 pt-4 pb-4 flex flex-col justify-center">
                 <h5 className="text-lg md:text-3xl font-extrabold tracking-wide text-center mb-2">
                   Bienvenue sur la web app de quiz ULTIME !
                 </h5>
