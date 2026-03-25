@@ -18,11 +18,11 @@ export default function Home() {
 
             <div className="w-full max-w-6xl mb-6">
               <Card className="w-full bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-cover bg-center bg-no-repeat [&>div]:min-h-80 md:[&>div]:min-h-[500px]">              
-              <div className="text-center text-[#DC3C35] bg-white bg-opacity-60 rounded-2xl p-6 md:p-10 mx-0 md:mx-12">
+              <div className="text-center text-[#f0c040] bg-[#0d1b2a] bg-opacity-70 rounded-2xl p-6 md:p-10 mx-0 md:mx-12">
                 <h5 className="text-2xl md:text-4xl font-extrabold tracking-wide">
                   Bienvenue sur la web app de quiz ULTIME !
                 </h5>
-                <p className="text-center text-[#1F2937] font-bold text-lg md:text-xl py-4">
+                <p className="text-center text-white font-bold text-lg md:text-xl py-4">
                   Tu veux tester tes connaissances et te mettre au défi ? Tu penses savoir où est ta place ? Tu es au bon endroit jeune quiziniste ! Seras-tu vraiment prêt à devenir...
                 </p>
                 <p className="text-2xl md:text-4xl font-extrabold tracking-wide rounded-lg">
