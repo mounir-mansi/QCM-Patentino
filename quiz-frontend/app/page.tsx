@@ -17,7 +17,7 @@ export default function Home() {
           <Title title="Welcome to the Quizine" />
 
             <div className="w-full max-w-6xl mb-6">
-              <Card className="w-full h-[calc(100vh-80px)] overflow-hidden bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-cover bg-center bg-no-repeat [&>div]:h-full [&>div]:flex [&>div]:items-end [&>div]:justify-center [&>div]:p-4">              
+              <Card className="w-full h-[calc(100vh-170px)] overflow-hidden bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-[size:100%_auto] bg-top bg-no-repeat [&>div]:h-full [&>div]:flex [&>div]:items-end [&>div]:justify-center [&>div]:p-4">              
               <div className="text-[#f0c040] bg-[#0d1b2a] bg-opacity-70 rounded-2xl p-4 md:p-10 mx-0 md:mx-12">
                 <h5 className="text-xl md:text-4xl font-extrabold tracking-wide text-center">
                   Bienvenue sur la web app de quiz ULTIME !
