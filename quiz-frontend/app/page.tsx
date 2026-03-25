@@ -11,24 +11,24 @@ export default function Home() {
       <Menu />
       <AnimatedBackground />
 
-        <div className="relative z-10 my-2 min-content-height">        
+        <div className="relative z-10 my-2 min-content-height">
           <div className="flex flex-col items-center px-4">
           <Title title="Welcome to the Quizine" />
 
-            <div className="w-full max-w-6xl mb-6 h-[calc(100vh-235px)] rounded-2xl overflow-hidden shadow-xl flex flex-col bg-[#fdf6e3]">
+            <div className="w-full max-w-6xl mb-6 h-[calc(100vh-15.3em)] rounded-2xl overflow-hidden shadow-xl flex flex-col bg-[#fdf6e3]">
               {/* Image — 60% de la hauteur */}
               <div
                 className="flex-[3] bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-[size:100%_auto] bg-top bg-no-repeat"
               />
-              {/* Texte — sans espace avec l'image */}
-              <div className="flex-[2] bg-[#fdf6e3] text-[#DC3C35] px-5 pt-4 pb-4 flex flex-col justify-center">
-                <h5 className="text-lg md:text-3xl font-extrabold tracking-wide text-center mb-2">
+              {/* Texte — centré, sans espace, sans arrondi en haut */}
+              <div className="flex-[2] bg-[#fdf6e3] text-[#DC3C35] px-5 pt-4 pb-4 flex flex-col justify-center items-center text-center">
+                <h5 className="text-lg md:text-3xl font-extrabold tracking-wide mb-2">
                   Bienvenue sur la web app de quiz ULTIME !
                 </h5>
-                <p className="text-[#1F2937] font-bold text-sm md:text-lg text-left md:text-center py-2">
+                <p className="text-[#1F2937] font-bold text-sm md:text-lg py-2">
                   Tu veux tester tes connaissances et te mettre au défi ? Tu penses savoir où est ta place ? Tu es au bon endroit jeune quiziniste ! Seras-tu vraiment prêt à devenir...
                 </p>
-                <p className="text-lg md:text-3xl font-extrabold tracking-wide text-center">
+                <p className="text-lg md:text-3xl font-extrabold tracking-wide">
                   LE.A CHEF.FE DE LA QUIZINE ???
                 </p>
               </div>
