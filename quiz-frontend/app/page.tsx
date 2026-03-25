@@ -17,7 +17,7 @@ export default function Home() {
           <Title title="Welcome to the Quizine" />
 
             <div className="w-full max-w-6xl mb-6">
-              <Card className="w-full bg-[url(https://media.tenor.com/U0Ny_4eBUM4AAAAd/cuisine-femme.gif)] bg-cover bg-center bg-no-repeat [&>div]:min-h-80 md:[&>div]:min-h-[500px]">              
+              <Card className="w-full bg-[url(https://images.pexels.com/photos/35755214/pexels-photo-35755214.jpeg)] bg-cover bg-center bg-no-repeat [&>div]:min-h-80 md:[&>div]:min-h-[500px]">              
               <div className="text-center text-[#DC3C35] bg-white bg-opacity-60 rounded-2xl p-6 md:p-10 mx-0 md:mx-12">
                 <h5 className="text-2xl md:text-4xl font-extrabold tracking-wide">
                   Bienvenue sur la web app de quiz ULTIME !
