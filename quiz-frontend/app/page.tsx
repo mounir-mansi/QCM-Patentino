@@ -18,7 +18,7 @@ export default function Home() {
             <div className="w-full max-w-6xl mb-6 h-[calc(100vh-15.3em)] rounded-2xl overflow-hidden shadow-xl flex flex-col bg-[#fdf6e3]">
               {/* Image — 60% de la hauteur */}
               <div
-                className="flex-[3] bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-[size:100%_auto] bg-top bg-no-repeat"
+                className="flex-[3] bg-[url(/pexels-jitte-davidson-2159038077-35755214.jpg)] bg-cover bg-center"
               />
               {/* Texte — centré, sans espace, sans arrondi en haut */}
               <div className="flex-[2] bg-[#fdf6e3] text-[#DC3C35] px-5 pt-4 pb-4 flex flex-col justify-center items-center text-center">
